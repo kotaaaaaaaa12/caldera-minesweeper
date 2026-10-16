@@ -11,7 +11,7 @@
     "run_worker_first": ["/api/*"]
   },
   "d1_databases": [{
-    "binding": "DB",
+    "binding": "LEADERBOARD_DB",
     "database_name": "caldera-leaderboard"
   }],
   "triggers": { "crons": ["17 * * * *"] },

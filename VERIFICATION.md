@@ -3,6 +3,7 @@
 Base upstream commit: `902e5142a2f56f711572deefd4877b2756a26b78`.
 
 - Automated game/API/service-worker tests: passed (43 tests).
+- Pinned Wrangler CLI against a local mock Cloudflare API: reproduced error 7404 from a stale `DB` binding; the renamed `LEADERBOARD_DB` binding bypassed the stale ID and completed both same-name database reuse and missing-database creation. No real Cloudflare account was contacted by this check.
 - Wrangler deployment dry run with the ID-free, automatically provisioned D1 binding, static-asset preparation, and Worker bundling: passed.
 - Local workerd runtime with actual local D1: health check, valid score submission, faster-best updates, slower/equal submission handling, duplicate prevention, name changes, stale-request protection, and token verification passed.
 - Public-assets isolation: server source returned 404; all offline-precache files returned 200.

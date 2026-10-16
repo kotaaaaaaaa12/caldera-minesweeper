@@ -46,7 +46,7 @@ export function winningScore(difficulty = 'beginner', noGuess = false, flagFirst
     proof: { seed, safeFirstClick: true, allowQuestion: false, noGuess, assisted: false, moves } };
 }
 
-function env() { return { DB: database(), ASSETS: { fetch: async () => new Response('asset') } }; }
+function env() { return { LEADERBOARD_DB: database(), ASSETS: { fetch: async () => new Response('asset') } }; }
 function call(environment, path, body, headers = {}) {
   return worker.fetch(new Request('https://example.com' + path, body === undefined ? {} : {
     method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body),
@@ -178,11 +178,11 @@ test('devices with identical names remain separate and cannot edit each other', 
 
 test('existing databases upgrade automatically and legacy records are preserved separately', async () => {
   const environment = env();
-  await environment.DB.prepare(`CREATE TABLE scores (id TEXT PRIMARY KEY,name TEXT NOT NULL,difficulty TEXT NOT NULL,
+  await environment.LEADERBOARD_DB.prepare(`CREATE TABLE scores (id TEXT PRIMARY KEY,name TEXT NOT NULL,difficulty TEXT NOT NULL,
     time_ms INTEGER NOT NULL,created_at TEXT NOT NULL DEFAULT '2026-10-15')`).run();
-  await environment.DB.prepare("INSERT INTO scores(id,name,difficulty,time_ms) VALUES('legacy','Old player','beginner',12000)").run();
+  await environment.LEADERBOARD_DB.prepare("INSERT INTO scores(id,name,difficulty,time_ms) VALUES('legacy','Old player','beginner',12000)").run();
   assert.equal((await call(environment, '/api/health')).status, 200);
-  assert.equal((await environment.DB.prepare('SELECT COUNT(*) AS count FROM scores').first()).count, 1);
+  assert.equal((await environment.LEADERBOARD_DB.prepare('SELECT COUNT(*) AS count FROM scores').first()).count, 1);
   await call(environment, '/api/scores', winningScore());
   const rows = (await (await call(environment, '/api/leaderboard?difficulty=beginner')).json()).rows;
   assert.equal(rows.length, 1);

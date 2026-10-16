@@ -92,9 +92,9 @@ export default {
     if (!reads.includes(path) && !['/api/scores', '/api/profile'].includes(path)) return json({ ok: false, error: 'Not found.' }, 404);
     const method = ['/api/scores', '/api/profile'].includes(path) ? 'POST' : 'GET';
     if (request.method !== method) return json({ ok: false, error: 'Method not allowed.' }, 405, { Allow: method });
-    if (!env.DB) return json({ ok: false, error: 'The leaderboard database is not connected.' }, 503);
+    if (!env.LEADERBOARD_DB) return json({ ok: false, error: 'The leaderboard database is not connected.' }, 503);
     try {
-      await ensureSchema(env.DB);
+      await ensureSchema(env.LEADERBOARD_DB);
       if (path === '/api/health') return json({ ok: true, storage: 'd1' });
       if (request.method === 'GET') {
         const difficulty = url.searchParams.get('difficulty');
@@ -102,12 +102,12 @@ export default {
         if (path === '/api/rank') {
           const timeMs = Number(url.searchParams.get('timeMs'));
           if (!Number.isInteger(timeMs) || timeMs < 1 || timeMs > 86400000) return json({ ok: false, error: 'Invalid time.' }, 400);
-          return json({ ok: true, rank: await rank(env.DB, difficulty, timeMs) });
+          return json({ ok: true, rank: await rank(env.LEADERBOARD_DB, difficulty, timeMs) });
         }
         const raw = url.searchParams.get('limit') || '10';
         const limit = Number(raw);
         if (!Number.isInteger(limit) || limit < 1 || limit > 100) return json({ ok: false, error: 'Invalid limit.' }, 400);
-        const { results } = await env.DB.prepare(`SELECT p.name,s.time_ms,s.created_at FROM leaderboard_scores s JOIN leaderboard_players p ON p.id=s.player_id
+        const { results } = await env.LEADERBOARD_DB.prepare(`SELECT p.name,s.time_ms,s.created_at FROM leaderboard_scores s JOIN leaderboard_players p ON p.id=s.player_id
           WHERE s.difficulty=? ORDER BY s.time_ms,s.created_at,s.player_id LIMIT ?`).bind(difficulty, limit).all();
         return json({ ok: true, rows: results });
       }
@@ -118,7 +118,7 @@ export default {
       if (!/^application\/json(?:;|$)/i.test(request.headers.get('Content-Type') || '')) {
         return json({ ok: false, error: 'Send JSON data.' }, 415);
       }
-      if (!await rateLimit(request, env.DB)) return json({ ok: false, error: 'Too many submissions. Try again in a minute.' }, 429, { 'Retry-After': '60' });
+      if (!await rateLimit(request, env.LEADERBOARD_DB)) return json({ ok: false, error: 'Too many submissions. Try again in a minute.' }, 429, { 'Retry-After': '60' });
       let body, player, score;
       try {
         body = await limitedBody(request);
@@ -128,27 +128,27 @@ export default {
         return json({ ok: false, error: error.message === 'body-too-large' ? 'Submission is too large.' :
           path === '/api/profile' ? 'Invalid player profile.' : 'Invalid score or replay.' }, error.message === 'body-too-large' ? 413 : 400);
       }
-      const savedPlayer = await savePlayer(env.DB, player);
+      const savedPlayer = await savePlayer(env.LEADERBOARD_DB, player);
       if (!savedPlayer) return json({ ok: false, error: 'This device could not be verified.' }, 403);
       if (path === '/api/profile') return json({ ok: true, name: savedPlayer.name });
       // The composite primary key and conditional upsert make concurrent updates safe.
-      const changed = await env.DB.prepare(`INSERT INTO leaderboard_scores(player_id,difficulty,run_id,time_ms) VALUES(?,?,?,?)
+      const changed = await env.LEADERBOARD_DB.prepare(`INSERT INTO leaderboard_scores(player_id,difficulty,run_id,time_ms) VALUES(?,?,?,?)
         ON CONFLICT(player_id,difficulty) DO UPDATE SET
           run_id=excluded.run_id,time_ms=excluded.time_ms,created_at=excluded.created_at
         WHERE excluded.time_ms < leaderboard_scores.time_ms RETURNING time_ms`)
         .bind(player.id, score.difficulty, score.id, score.timeMs).first();
-      const best = await env.DB.prepare('SELECT time_ms FROM leaderboard_scores WHERE player_id=? AND difficulty=?')
+      const best = await env.LEADERBOARD_DB.prepare('SELECT time_ms FROM leaderboard_scores WHERE player_id=? AND difficulty=?')
         .bind(player.id, score.difficulty).first();
       return json({ ok: true, name: savedPlayer.name, updated: !!changed, bestTimeMs: best.time_ms,
-        rank: await rank(env.DB, score.difficulty, best.time_ms) });
+        rank: await rank(env.LEADERBOARD_DB, score.difficulty, best.time_ms) });
     } catch (error) {
       console.error('Leaderboard request failed:', error.message);
       return json({ ok: false, error: 'The leaderboard is temporarily unavailable.' }, 503);
     }
   },
   async scheduled(_event, env) {
-    if (!env.DB) return;
-    await ensureSchema(env.DB);
-    await env.DB.prepare('DELETE FROM rate_limits WHERE expires_at < ?').bind(Math.floor(Date.now() / 1000)).run();
+    if (!env.LEADERBOARD_DB) return;
+    await ensureSchema(env.LEADERBOARD_DB);
+    await env.LEADERBOARD_DB.prepare('DELETE FROM rate_limits WHERE expires_at < ?').bind(Math.floor(Date.now() / 1000)).run();
   },
 };
