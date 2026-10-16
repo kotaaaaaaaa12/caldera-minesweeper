@@ -6,6 +6,7 @@
 
 import { formatClock, formatTime } from "./timer.js";
 import { ACHIEVEMENTS } from "./achievements.js";
+import { dailyDiffKey } from "./daily.js";
 
 export const DIFFICULTIES = {
   beginner:     { w: 9,  h: 9,  m: 10, label: "Beginner" },
@@ -134,8 +135,9 @@ export class UI {
     e.lbBtn.addEventListener("click", () => this._cb.onOpenLeaderboard && this._cb.onOpenLeaderboard());
     e.lbClose.addEventListener("click", () => e.lbDlg.close());
     e.lbSegs.forEach((seg) => seg.addEventListener("click", () => {
-      this.setLbActive(seg.dataset.lbdiff);
-      this._cb.onLbDifficulty && this._cb.onLbDifficulty(seg.dataset.lbdiff);
+      const diff = seg.dataset.lbdiff === "daily" ? dailyDiffKey() : seg.dataset.lbdiff;
+      this.setLbActive(diff);
+      this._cb.onLbDifficulty && this._cb.onLbDifficulty(diff);
     }));
     e.ovLb.addEventListener("submit", (ev) => {
       ev.preventDefault();
@@ -311,7 +313,7 @@ export class UI {
     this.el.lbDlg.showModal();
   }
   setLbActive(diff) {
-    this.el.lbSegs.forEach((s) => s.setAttribute("aria-pressed", String(s.dataset.lbdiff === diff)));
+    this.el.lbSegs.forEach((s) => s.setAttribute("aria-pressed", String(s.dataset.lbdiff === (diff.startsWith("daily-") ? "daily" : diff))));
   }
   renderLeaderboardLoading() {
     this.el.lbList.innerHTML = `<div class="lb-empty">Loading…</div>`;
@@ -319,7 +321,7 @@ export class UI {
   renderLeaderboard({ rows, offline, error }) {
     const el = this.el.lbList;
     if (offline) {
-      el.innerHTML = `<div class="lb-empty">Online leaderboard not configured yet.<br>Add your Supabase keys to enable it.</div>`;
+      el.innerHTML = `<div class="lb-empty">Online leaderboard is unavailable.<br>Your local records are still saved on this device.</div>`;
       return;
     }
     if (error) { el.innerHTML = `<div class="lb-empty">Couldn't load scores.<br>${escapeHtml(error)}</div>`; return; }

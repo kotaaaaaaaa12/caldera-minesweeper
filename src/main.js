@@ -87,7 +87,11 @@ function diffKey() {
 
 /* ---------- new game ---------- */
 function newGame(opts = {}) {
+  stopReplay();
+  _pendingWin = null;
   run = freshRun();
+  run.id = crypto.randomUUID();
+  run.rankable = true;
   run.daily = !!opts.daily;
   run.noGuess = !run.daily && !!settings.noGuess;
 
@@ -111,6 +115,8 @@ function newGame(opts = {}) {
   }
 
   engine.reset({ ...cfg, ...resetOpts });
+  run.safeFirstClick = engine.safeFirstClick;
+  run.allowQuestion = engine.allowQuestion;
   renderer.build(engine);
   timer.reset();
   ui.setMineCount(engine.minesRemaining);
@@ -141,6 +147,10 @@ function handle(result, opts = {}) {
   }
   if (!opts.replay) playSound(result);
 
+  if (opts.replay) {
+    if (result.ended) { timer.stop(); ui.setFace(result.ended); }
+    return;
+  }
   if (result.ended === "won") return onWin();
   if (result.ended === "lost") return onLose(result.origin);
   if (engine.status === "playing") saveGame();
@@ -179,17 +189,25 @@ function onWin() {
   ui.refreshStats(stats.all());
 
   // Online leaderboard: ranked presets + daily, never assisted runs.
-  const lbEligible = leaderboard.isConfigured() && !engine.assisted &&
+  const lbEligible = leaderboard.isConfigured() && run.rankable && !!run.id && !engine.assisted &&
     (!!DIFFICULTIES[currentDiff] || run.daily) && !isCustomRun();
   const lbDiff = run.daily ? daily.dailyDiffKey(run.dailyKey) : currentDiff;
   const lbLabel = run.daily ? `Daily ${run.dailyKey}` : ((DIFFICULTIES[currentDiff] || {}).label || currentDiff);
 
+  const wonRun = run;
+  const proof = {
+    seed: run.seed, safeFirstClick: run.safeFirstClick, allowQuestion: run.allowQuestion,
+    noGuess: run.noGuess, assisted: engine.assisted, moves: run.moves.map(move => ({ ...move })),
+  };
+  const submission = { id: run.id, difficulty: lbDiff, timeMs: Math.max(1, Math.round(timeMs)), proof, label: lbLabel };
   setTimeout(() => {
+    if (run !== wonRun || replaying || engine.status !== "won") return;
     ui.showResult({ won: true, timeMs, isBest: isBest && !engine.assisted, metrics: ctx });
     flushAchievements(fresh);
     if (!lbEligible) return;
-    if (settings.name) submitWin(lbDiff, timeMs, settings.name, lbLabel);
-    else { _pendingWin = { difficulty: lbDiff, timeMs, label: lbLabel }; ui.showOverlaySubmit(""); }
+    _pendingWin = submission;
+    if (settings.name) submitWin(submission, settings.name);
+    else ui.showOverlaySubmit("");
   }, 650);
 }
 
@@ -209,20 +227,30 @@ function winContext(won, timeMs) {
   };
 }
 
-async function submitWin(difficulty, timeMs, name, label) {
-  const res = await leaderboard.submitScore({ name, difficulty, timeMs });
+const submissions = new Set();
+async function submitWin(submission, name) {
+  if (submissions.has(submission.id)) return;
+  submissions.add(submission.id);
+  let res;
+  try { res = await leaderboard.submitScore({ ...submission, name }); }
+  finally { submissions.delete(submission.id); }
+  if (_pendingWin !== submission) return;
   if (!res.ok) {
-    ui.setOverlayRank(res.offline ? "" : "Couldn't reach the leaderboard.");
+    ui.setOverlayRank(res.error || "Could not submit your score.");
+    ui.showOverlaySubmit(name);
     return;
   }
-  const rank = await leaderboard.rankFor(difficulty, timeMs);
-  ui.setOverlayRank(rank ? `#${rank} on the ${label} leaderboard 🏆` : `Submitted to the ${label} leaderboard 🏆`);
+  _pendingWin = null;
+  ui.setOverlayRank(`#${res.rank} on the ${submission.label} leaderboard 🏆`);
 }
 
+let leaderboardRequest = 0;
 async function loadLeaderboard(diff) {
+  const requestId = ++leaderboardRequest;
   if (!leaderboard.isConfigured()) { ui.renderLeaderboard({ offline: true }); return; }
   ui.renderLeaderboardLoading();
-  ui.renderLeaderboard(await leaderboard.topScores(diff, 10));
+  const result = await leaderboard.topScores(diff, 10);
+  if (requestId === leaderboardRequest) ui.renderLeaderboard(result);
 }
 
 function onLose() {
@@ -233,7 +261,8 @@ function onLose() {
   stats.record(diffKey(), { won: false, timeMs: engine.elapsedMs(), assisted: engine.assisted });
   announce("You hit a mine. Game over.");
   saveReplay(false, engine.elapsedMs());
-  setTimeout(() => ui.showResult({ won: false }), 600);
+  const lostRun = run;
+  setTimeout(() => { if (run === lostRun && !replaying && engine.status === "lost") ui.showResult({ won: false }); }, 600);
   clearSavedGame();
   ui.refreshStats(stats.all());
 }
@@ -361,6 +390,7 @@ let replayTimers = [];
 function saveReplay(won, timeMs) {
   storage.set("lastGame", {
     seed: run.seed, daily: run.daily, dailyKey: run.dailyKey, noGuess: run.noGuess,
+    safeFirstClick: run.safeFirstClick, allowQuestion: run.allowQuestion,
     diff: currentDiff, custom: customConfig, moves: run.moves,
     ctx: winContext(won, timeMs),
   });
@@ -377,10 +407,12 @@ function doReplay() {
   const last = storage.get("lastGame", null);
   if (!last || !last.moves || !last.moves.length) { announce("No game to replay yet."); return; }
   stopReplay();
+  _pendingWin = null;
+  run.rankable = false;
   ui.hideResult();
 
   // rebuild the exact same board
-  const resetOpts = { safeFirstClick: settings.safeFirstClick, allowQuestion: settings.question, seed: last.seed };
+  const resetOpts = { safeFirstClick: last.safeFirstClick ?? settings.safeFirstClick, allowQuestion: last.allowQuestion ?? settings.question, seed: last.seed };
   let cfg;
   if (last.daily) {
     cfg = { width: daily.DAILY_CONFIG.w, height: daily.DAILY_CONFIG.h, mines: daily.DAILY_CONFIG.m };
@@ -445,6 +477,7 @@ function tryRestore() {
     currentDiff = saved.diff;
     customConfig = saved.custom || customConfig;
     if (saved.run) run = { ...freshRun(), ...saved.run };
+    if (run.noGuess && !engine.firstClickDone) engine.mineGenerator = makeNoGuessGenerator();
     run.threeBV = compute3BV(engine);
     renderer.build(engine);
     renderer.repaintAll();
@@ -506,7 +539,7 @@ ui.bind({
     ui.refreshStats(stats.all()); ui.setBest(stats.bestFor(diffKey()));
   },
   onOpenLeaderboard: () => {
-    const d = DIFFICULTIES[currentDiff] ? currentDiff : "beginner";
+    const d = run.daily ? daily.dailyDiffKey(run.dailyKey) : (DIFFICULTIES[currentDiff] ? currentDiff : "beginner");
     ui.openLeaderboard(d);
     loadLeaderboard(d);
   },
@@ -514,17 +547,19 @@ ui.bind({
   onSubmitScore: (name) => {
     const clean = (name || "").trim().slice(0, 20);
     if (clean) { settings.name = clean; settingsStore.save(settings); ui.reflectSettings(settings); }
-    if (_pendingWin) {
-      submitWin(_pendingWin.difficulty, _pendingWin.timeMs, clean || "Anonymous", _pendingWin.label);
-      _pendingWin = null;
-    }
+    if (_pendingWin) submitWin(_pendingWin, clean || "Anonymous");
   },
   onSetting: (key, val) => {
+    if (["safeFirstClick", "question"].includes(key) && settings[key] !== val) {
+      if (engine.firstClickDone || run.moves.length) run.rankable = false;
+      else if (key === "safeFirstClick") run.safeFirstClick = run.daily ? true : val;
+      else run.allowQuestion = val;
+    }
     settings[key] = val;
     settingsStore.save(settings);
     if (key === "palette" || key === "animations" || key === "contrast") applyTheme();
     if (key === "sound") setSound(val);
-    if (key === "safeFirstClick") { ui.safeFirstClick = val; if (!engine.firstClickDone) engine.safeFirstClick = val; }
+    if (key === "safeFirstClick") { ui.safeFirstClick = val; if (!engine.firstClickDone && !run.daily) engine.safeFirstClick = val; }
     if (key === "question") engine.allowQuestion = val;
   },
 });

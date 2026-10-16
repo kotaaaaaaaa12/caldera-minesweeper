@@ -169,8 +169,8 @@ export class Engine {
     if (!this.firstClickDone) {
       if (!this._placed) this._placeMines(i);
       this.firstClickDone = true;
+      if (this.status === "idle") this.startTime = now();
       this.status = "playing";
-      this.startTime = now();
       started = true;
     }
     this._pushHistory();

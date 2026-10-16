@@ -3,10 +3,11 @@
    Bump CACHE when shipping changes to invalidate old assets.
    ============================================================ */
 
-const CACHE = "caldera-v4";
+const CACHE = "caldera-cloudflare-d1-v1";
 const ASSETS = [
   "./",
   "./index.html",
+  "./config.js",
   "./manifest.webmanifest",
   "./assets/favicon.svg",
   "./src/leaderboard.js",
@@ -43,7 +44,7 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k.startsWith("caldera-") && k !== CACHE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -52,23 +53,21 @@ self.addEventListener("fetch", (e) => {
   const { request } = e;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
-  // let cross-origin requests (Supabase API, esm.sh CDN) go straight to network
-  if (url.origin !== location.origin) return;
-  // never cache runtime config — it carries env-injected keys that may change
-  if (url.pathname.endsWith("/config.js")) {
-    e.respondWith(fetch(request).catch(() => caches.match(request)));
-    return;
-  }
+  // API traffic must always reach the network.
+  if (url.origin !== location.origin || url.pathname.startsWith("/api/")) return;
+  // Runtime configuration is part of the versioned offline asset set.
   e.respondWith(
     caches.match(request).then((cached) =>
       cached ||
       fetch(request)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+          if (res.ok && res.type !== "opaque") {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+          }
           return res;
         })
-        .catch(() => caches.match("./index.html"))
+        .catch(async () => request.mode === "navigate" ? (await caches.match("./index.html")) : Response.error())
     )
   );
 });

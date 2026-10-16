@@ -1,13 +1,29 @@
 {
   "name": "caldera-minesweeper",
   "version": "1.0.0",
-  "description": "A modern, customizable, tactile Minesweeper for the web — no build step, no dependencies.",
+  "description": "A modern, customizable, tactile Minesweeper for the web \u2014 no build step, no dependencies.",
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "start": "python3 -m http.server 8000"
+    "start": "wrangler dev",
+    "build": "node scripts/build-cloudflare.mjs",
+    "deploy": "wrangler deploy",
+    "check": "node --test && wrangler deploy --dry-run"
   },
-  "keywords": ["minesweeper", "game", "vanilla-js", "no-build", "pwa", "accessible"],
+  "keywords": [
+    "minesweeper",
+    "game",
+    "vanilla-js",
+    "no-build",
+    "pwa",
+    "accessible"
+  ],
   "license": "MIT",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "wrangler": "4.151.0"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
 }
