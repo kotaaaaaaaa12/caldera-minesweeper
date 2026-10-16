@@ -1,0 +1,20 @@
+{
+  "name": "Caldera マインスイーパー",
+  "short_name": "Caldera",
+  "description": "盤面や見た目を自由に設定できる、オフライン対応のマインスイーパー。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#16130F",
+  "theme_color": "#16130F",
+  "icons": [
+    {
+      "src": "./assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "ja"
+}

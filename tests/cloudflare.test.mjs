@@ -157,7 +157,7 @@ test('service worker bypasses APIs and includes configuration in offline assets'
   let install;
   listeners.install({ waitUntil: pending => { install = pending; } });
   await install;
-  assert.ok(precached.includes('./config.js'));
+  for (const path of ['./config.js','./src/i18n.js','./src/locales/en.js','./src/locales/ja.js','./manifest-ja.webmanifest']) assert.ok(precached.includes(path), path);
   let intercepted = false;
   listeners.fetch({ request: new Request('https://example.com/api/leaderboard?difficulty=beginner'), respondWith: () => { intercepted = true; } });
   assert.equal(intercepted,false);

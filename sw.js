@@ -3,12 +3,16 @@
    Bump CACHE when shipping changes to invalidate old assets.
    ============================================================ */
 
-const CACHE = "caldera-cloudflare-d1-v1";
+const CACHE = "caldera-cloudflare-d1-i18n-v2";
 const ASSETS = [
   "./",
   "./index.html",
   "./config.js",
   "./manifest.webmanifest",
+  "./manifest-ja.webmanifest",
+  "./src/i18n.js",
+  "./src/locales/en.js",
+  "./src/locales/ja.js",
   "./assets/favicon.svg",
   "./src/leaderboard.js",
   "./styles/tokens.css",

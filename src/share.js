@@ -1,3 +1,4 @@
+import { t, difficultyLabel } from "./i18n.js";
 /* ============================================================
    share.js — Wordle-style shareable result text + clipboard.
    Produces a compact, emoji-flavored summary (plus an optional
@@ -14,20 +15,20 @@ import { isMine } from "./board.js";
  */
 export function buildShare(r, engine) {
   const lines = [];
-  const tag = r.daily ? `Daily ${r.dailyKey}` : (r.title || "Custom");
-  lines.push(`Caldera Minesweeper — ${tag}`);
+  const tag = r.daily ? t("game.dailyDate", { date: r.dailyKey }) : (r.difficulty ? difficultyLabel(r.difficulty) : (r.title || t("difficulty.custom")));
+  lines.push(t("share.title", { difficulty: tag }));
 
   if (r.won) {
-    lines.push(`🟩 Cleared in ${formatTime(r.timeMs)}`);
+    lines.push("🟩 " + t("game.cleared", { time: formatTime(r.timeMs) }));
     const bits = [];
     if (r.threeBV) bits.push(`3BV ${r.threeBV}`);
-    if (r.threeBVps != null) bits.push(`${r.threeBVps.toFixed(2)}/s`);
-    if (r.efficiency != null) bits.push(`${Math.round(r.efficiency * 100)}% eff`);
+    if (r.threeBVps != null) bits.push(t("metric.speed", { value: r.threeBVps.toFixed(2) }));
+    if (r.efficiency != null) bits.push(t("metric.efficiency", { value: Math.round(r.efficiency * 100) }));
     if (bits.length) lines.push(`⏱ ${bits.join(" · ")}`);
-    if (r.noGuess) lines.push("🧠 No-guess");
-    if (r.streak >= 2) lines.push(`🔥 ${r.streak} win streak`);
+    if (r.noGuess) lines.push("🧠 " + t("game.noGuess"));
+    if (r.streak >= 2) lines.push("🔥 " + t("share.streak", { count: r.streak }));
   } else {
-    lines.push("💥 Boom — hit a mine");
+    lines.push("💥 " + t("share.lost"));
   }
 
   if (engine && engine.width <= 30) {

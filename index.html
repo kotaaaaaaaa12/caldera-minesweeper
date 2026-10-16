@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>Caldera · Minesweeper</title>
-  <meta name="description" content="Caldera — a modern, customizable, tactile Minesweeper. Built as a fast, offline-capable static site." />
+  <title data-i18n="page.title">Caldera · Minesweeper</title>
+  <meta name="description" content="Caldera — a modern, customizable, tactile Minesweeper. Built as a fast, offline-capable static site." data-i18n-content="page.description" />
   <meta name="theme-color" content="#16130F" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)" />
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="./styles/extras.css" />
 </head>
 <body>
-  <a class="skip-link" href="#board">Skip to board</a>
+  <a class="skip-link" href="#board"><span data-i18n="ui.skip">Skip to board</span></a>
 
   <div class="app">
     <header class="app-bar">
@@ -28,45 +28,45 @@
             <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"></path>
           </svg>
         </span>
-        <h1 class="brand-name">Caldera <span>minesweeper</span></h1>
+        <h1 class="brand-name">Caldera <span data-i18n="ui.subtitle">minesweeper</span></h1>
       </div>
 
-      <nav class="app-actions" aria-label="App actions">
-        <button id="btn-daily" class="icon-btn" type="button" title="Daily Challenge" aria-label="Play the daily challenge">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+      <nav class="app-actions" aria-label="App actions" data-i18n-aria-label="ui.actions">
+        <button id="btn-daily" class="icon-btn" type="button" title="Daily Challenge" aria-label="Play the daily challenge" data-i18n-title="ui.dailyChallenge" data-i18n-aria-label="ui.playDaily">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" /></svg>
         </button>
-        <button id="btn-leaderboard" class="icon-btn" type="button" title="Leaderboard" aria-label="Online leaderboard">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4zM7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/></svg>
+        <button id="btn-leaderboard" class="icon-btn" type="button" title="Leaderboard" aria-label="Online leaderboard" data-i18n-title="ui.leaderboard" data-i18n-aria-label="ui.onlineLeaderboard">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4zM7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3" /></svg>
         </button>
-        <button id="btn-stats" class="icon-btn" type="button" title="Stats &amp; best times" aria-label="Stats and best times">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21V10M16 21V3M4 21h16M12 21V14"/></svg>
+        <button id="btn-stats" class="icon-btn" type="button" title="Stats &amp; best times" aria-label="Stats and best times" data-i18n-title="ui.statsTitle" data-i18n-aria-label="ui.statsLabel">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21V10M16 21V3M4 21h16M12 21V14" /></svg>
         </button>
-        <button id="btn-settings" class="icon-btn" type="button" title="Settings" aria-label="Open settings">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <button id="btn-settings" class="icon-btn" type="button" title="Settings" aria-label="Open settings" data-i18n-title="ui.settings" data-i18n-aria-label="ui.openSettings">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
         </button>
-        <button id="btn-theme" class="icon-btn" type="button" title="Toggle theme" aria-label="Toggle color theme">
-          <svg class="ico-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-          <svg class="ico-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <button id="btn-theme" class="icon-btn" type="button" title="Toggle theme" aria-label="Toggle color theme" data-i18n-title="ui.toggleTheme" data-i18n-aria-label="ui.toggleColorTheme">
+          <svg class="ico-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>
+          <svg class="ico-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
         </button>
       </nav>
     </header>
 
     <main class="stage">
-      <section class="hud glass" aria-label="Game status">
-        <div class="readout" id="mine-readout" title="Mines remaining">
+      <section class="hud glass" aria-label="Game status" data-i18n-aria-label="ui.gameStatus">
+        <div class="readout" id="mine-readout" title="Mines remaining" data-i18n-title="ui.minesRemaining">
           <span class="readout-ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="6"/><path d="M12 1v22M1 12h22M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="1.5"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="6" /><path d="M12 1v22M1 12h22M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="1.5" /></svg>
           </span>
           <span class="readout-value" id="mine-count" aria-live="off">010</span>
         </div>
 
-        <button id="btn-reset" class="face" type="button" data-face="idle" title="New game (R)" aria-label="New game">
+        <button id="btn-reset" class="face" type="button" data-face="idle" title="New game (R)" aria-label="New game" data-i18n-title="ui.newGameShortcut" data-i18n-aria-label="ui.newGame">
           <span class="face-glyph" aria-hidden="true">🙂</span>
         </button>
 
-        <div class="readout" id="timer-readout" title="Elapsed time">
+        <div class="readout" id="timer-readout" title="Elapsed time" data-i18n-title="ui.elapsedTime">
           <span class="readout-ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2 2M9 2h6" /></svg>
           </span>
           <span class="readout-value" id="timer">000</span>
         </div>
@@ -76,101 +76,101 @@
 
       <div class="board-wrap">
         <div class="well">
-          <div id="board" class="board" role="grid" aria-label="Minesweeper board" tabindex="0"></div>
+          <div id="board" class="board" role="grid" aria-label="Minesweeper board" tabindex="0" data-i18n-aria-label="ui.board"></div>
         </div>
         <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
 
-        <div class="zoom-control" role="group" aria-label="Board zoom">
-          <button id="btn-zoom-out" class="zoom-btn" type="button" title="Zoom out (−)" aria-label="Zoom out">−</button>
-          <button id="zoom-label" class="zoom-label" type="button" title="Reset zoom" aria-label="Reset zoom">100%</button>
-          <button id="btn-zoom-in" class="zoom-btn" type="button" title="Zoom in (+)" aria-label="Zoom in">+</button>
+        <div class="zoom-control" role="group" aria-label="Board zoom" data-i18n-aria-label="ui.boardZoom">
+          <button id="btn-zoom-out" class="zoom-btn" type="button" title="Zoom out (−)" aria-label="Zoom out" data-i18n-title="ui.zoomOutShortcut" data-i18n-aria-label="ui.zoomOut">−</button>
+          <button id="zoom-label" class="zoom-label" type="button" title="Reset zoom" aria-label="Reset zoom" data-i18n-title="ui.zoomReset" data-i18n-aria-label="ui.zoomReset">100%</button>
+          <button id="btn-zoom-in" class="zoom-btn" type="button" title="Zoom in (+)" aria-label="Zoom in" data-i18n-title="ui.zoomInShortcut" data-i18n-aria-label="ui.zoomIn">+</button>
         </div>
 
         <div id="overlay" class="overlay hidden" role="dialog" aria-labelledby="overlay-title" aria-describedby="overlay-sub">
           <div class="overlay-card glass">
             <div class="overlay-emoji" id="overlay-emoji" aria-hidden="true">🎉</div>
-            <h2 id="overlay-title">You win</h2>
-            <p id="overlay-sub" class="overlay-sub">Cleared in 000s</p>
-            <div id="overlay-best" class="overlay-best hidden">⚡ New best time!</div>
+            <h2 id="overlay-title"><span data-i18n="ui.winInitial">You win</span></h2>
+            <p id="overlay-sub" class="overlay-sub"><span data-i18n="ui.clearedInitial">Cleared in 000s</span></p>
+            <div id="overlay-best" class="overlay-best hidden"><span data-i18n="ui.newBest">⚡ New best time!</span></div>
             <div id="overlay-metrics" class="overlay-metrics hidden"></div>
             <div id="overlay-rank" class="overlay-rank hidden"></div>
             <form id="overlay-lb" class="overlay-lb hidden">
-              <input id="overlay-name" class="lb-input" type="text" maxlength="20" placeholder="Your name" aria-label="Your leaderboard name" />
-              <button id="overlay-submit" class="btn btn-primary" type="submit">Submit</button>
+              <input id="overlay-name" class="lb-input" type="text" maxlength="20" placeholder="Your name" aria-label="Your leaderboard name" data-i18n-placeholder="ui.yourName" data-i18n-aria-label="ui.rankingName" />
+              <button id="overlay-submit" class="btn btn-primary" type="submit"><span data-i18n="ui.submit">Submit</span></button>
             </form>
             <div class="overlay-actions">
-              <button id="overlay-again" class="btn btn-primary" type="button">Play again</button>
-              <button id="overlay-share" class="btn btn-ghost" type="button">Share</button>
-              <button id="overlay-replay" class="btn btn-ghost" type="button">Replay</button>
-              <button id="overlay-dismiss" class="btn btn-ghost" type="button">Review board</button>
+              <button id="overlay-again" class="btn btn-primary" type="button"><span data-i18n="ui.playAgain">Play again</span></button>
+              <button id="overlay-share" class="btn btn-ghost" type="button"><span data-i18n="ui.share">Share</span></button>
+              <button id="overlay-replay" class="btn btn-ghost" type="button"><span data-i18n="ui.replay">Replay</span></button>
+              <button id="overlay-dismiss" class="btn btn-ghost" type="button"><span data-i18n="ui.review">Review board</span></button>
             </div>
           </div>
         </div>
       </div>
 
-      <section class="toolbar glass" aria-label="Game controls">
-        <div class="segmented" role="group" aria-label="Difficulty">
-          <button class="seg" data-diff="beginner" type="button">Beginner</button>
-          <button class="seg" data-diff="intermediate" type="button">Intermediate</button>
-          <button class="seg" data-diff="expert" type="button">Expert</button>
-          <button class="seg" data-diff="custom" type="button">Custom</button>
+      <section class="toolbar glass" aria-label="Game controls" data-i18n-aria-label="ui.gameControls">
+        <div class="segmented" role="group" aria-label="Difficulty" data-i18n-aria-label="ui.difficulty">
+          <button class="seg" data-diff="beginner" type="button"><span data-i18n="difficulty.beginner">Beginner</span></button>
+          <button class="seg" data-diff="intermediate" type="button"><span data-i18n="difficulty.intermediate">Intermediate</span></button>
+          <button class="seg" data-diff="expert" type="button"><span data-i18n="difficulty.expert">Expert</span></button>
+          <button class="seg" data-diff="custom" type="button"><span data-i18n="difficulty.custom">Custom</span></button>
           <span class="seg-thumb" aria-hidden="true"></span>
         </div>
 
         <div class="tool-group">
-          <button id="btn-flag-mode" class="chip" type="button" aria-pressed="false" title="Toggle tap-to-flag (mobile)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22V4M4 4h13l-2 4 2 4H4"/></svg>
-            <span>Flag</span>
+          <button id="btn-flag-mode" class="chip" type="button" aria-pressed="false" title="Toggle tap-to-flag (mobile)" data-i18n-title="ui.flagMode">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22V4M4 4h13l-2 4 2 4H4" /></svg>
+            <span data-i18n="ui.flag">Flag</span>
           </button>
-          <button id="btn-hint" class="chip" type="button" title="Reveal a safe cell (counts as assisted)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>
-            <span>Hint</span>
+          <button id="btn-hint" class="chip" type="button" title="Reveal a safe cell (counts as assisted)" data-i18n-title="ui.hintTitle">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z" /></svg>
+            <span data-i18n="ui.hint">Hint</span>
           </button>
-          <button id="btn-undo" class="chip" type="button" title="Undo last move (U) — counts as assisted" disabled aria-disabled="true">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>
-            <span>Undo</span>
+          <button id="btn-undo" class="chip" type="button" title="Undo last move (U) — counts as assisted" disabled aria-disabled="true" data-i18n-title="ui.undoTitle">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5" /><path d="M4 9h11a5 5 0 0 1 0 10h-1" /></svg>
+            <span data-i18n="ui.undo">Undo</span>
           </button>
         </div>
 
-        <div class="best-badge" id="best-badge" title="Best time for this difficulty">
+        <div class="best-badge" id="best-badge" title="Best time for this difficulty" data-i18n-title="ui.bestTitle">
           <span class="best-ico" aria-hidden="true">⚡</span>
           <span id="best-time">—</span>
         </div>
       </section>
     </main>
 
-    <footer class="app-foot" aria-label="How to play">
-      <span aria-hidden="true">Reveal · Flag · Chord · <kbd>U</kbd> undo · <kbd>1</kbd>–<kbd>8</kbd> pencil · <kbd>R</kbd> restart</span>
-      <span class="sr-only">Mouse: left-click to reveal, right-click to flag, double-click or middle-click to chord.
+    <footer class="app-foot" aria-label="How to play" data-i18n-aria-label="ui.howToPlay">
+      <span aria-hidden="true"><span data-i18n="ui.controlsShort">Reveal · Flag · Chord · U undo · 1–8 pencil · R restart</span></span>
+      <span class="sr-only"><span data-i18n="ui.controlsFull">Mouse: left-click to reveal, right-click to flag, double-click or middle-click to chord.
         Touch: tap to reveal, long-press to flag, double-tap to chord.
         Keyboard: arrow keys or W A S D to move, Space or Enter to reveal, F to flag, C to chord,
-        number keys 1 to 8 to place a pencil mark, U to undo, plus and minus to zoom, R to restart.</span>
+        number keys 1 to 8 to place a pencil mark, U to undo, plus and minus to zoom, R to restart.</span></span>
     </footer>
   </div>
 
   <!-- Custom board dialog -->
   <dialog id="custom-dialog" class="modal">
     <form method="dialog" class="modal-body">
-      <h2 class="modal-title">Custom board</h2>
+      <h2 class="modal-title"><span data-i18n="ui.customBoard">Custom board</span></h2>
       <div class="field">
-        <label for="inp-width">Width <output id="out-width">16</output></label>
+        <label for="inp-width"><span data-i18n="ui.width">Width</span> <output id="out-width">16</output></label>
         <input id="inp-width" type="range" min="5" max="60" step="1" value="16" />
       </div>
       <div class="field">
-        <label for="inp-height">Height <output id="out-height">16</output></label>
+        <label for="inp-height"><span data-i18n="ui.height">Height</span> <output id="out-height">16</output></label>
         <input id="inp-height" type="range" min="5" max="40" step="1" value="16" />
       </div>
       <div class="field">
-        <label for="inp-mines">Mines <output id="out-mines">40</output></label>
+        <label for="inp-mines"><span data-i18n="ui.mines">Mines</span> <output id="out-mines">40</output></label>
         <input id="inp-mines" type="range" min="1" max="100" step="1" value="40" />
       </div>
       <div class="density">
         <div class="density-bar"><span id="density-fill"></span></div>
-        <div class="density-label"><span id="density-pct">15%</span> mine density · <span id="density-note">comfortable</span></div>
+        <div class="density-label"><span id="density-pct">15%</span> <span data-i18n="ui.mineDensity">mine density ·</span> <span id="density-note"><span data-i18n="density.comfortable">comfortable</span></span></div>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-ghost" value="cancel" type="submit">Cancel</button>
-        <button class="btn btn-primary" id="custom-start" value="start" type="submit">Start game</button>
+        <button class="btn btn-ghost" value="cancel" type="submit"><span data-i18n="ui.cancel">Cancel</span></button>
+        <button class="btn btn-primary" id="custom-start" value="start" type="submit"><span data-i18n="ui.startGame">Start game</span></button>
       </div>
     </form>
   </dialog>
@@ -178,11 +178,11 @@
   <!-- Stats dialog -->
   <dialog id="stats-dialog" class="modal">
     <div class="modal-body">
-      <h2 class="modal-title">Best times &amp; stats</h2>
+      <h2 class="modal-title"><span data-i18n="ui.bestStats">Best times &amp; stats</span></h2>
       <div id="stats-content" class="stats-grid"></div>
       <div class="modal-actions">
-        <button class="btn btn-ghost" id="stats-reset" type="button">Reset stats</button>
-        <button class="btn btn-primary" id="stats-close" type="button">Close</button>
+        <button class="btn btn-ghost" id="stats-reset" type="button"><span data-i18n="ui.resetStats">Reset stats</span></button>
+        <button class="btn btn-primary" id="stats-close" type="button"><span data-i18n="ui.close">Close</span></button>
       </div>
     </div>
   </dialog>
@@ -190,36 +190,43 @@
   <!-- Settings dialog -->
   <dialog id="settings-dialog" class="modal">
     <div class="modal-body">
-      <h2 class="modal-title">Settings</h2>
+      <h2 class="modal-title"><span data-i18n="ui.settings">Settings</span></h2>
       <div class="settings-list">
-        <label class="switch-row"><span>Leaderboard name</span>
-          <input id="set-name" type="text" class="text-input" maxlength="20" placeholder="Anonymous" /></label>
-        <label class="switch-row"><span>Theme palette</span>
-          <select id="set-palette" class="select">
-            <option value="caldera">Caldera (warm)</option>
-            <option value="slate">Slate (cool)</option>
-            <option value="classic">Classic</option>
+        <label class="switch-row"><span data-i18n="ui.language">Language</span>
+          <select id="set-language" class="select">
+            <option value="auto" data-i18n="language.auto">Auto</option>
+            <option value="en" data-i18n="language.en">English</option>
+            <option value="ja" data-i18n="language.ja">日本語</option>
           </select>
         </label>
-        <label class="switch-row"><span>Question marks (?)</span>
+        <label class="switch-row"><span data-i18n="ui.leaderboardName">Leaderboard name</span>
+          <input id="set-name" type="text" class="text-input" maxlength="20" placeholder="Anonymous" data-i18n-placeholder="ui.anonymous" /></label>
+        <label class="switch-row"><span data-i18n="ui.palette">Theme palette</span>
+          <select id="set-palette" class="select">
+            <option value="caldera" data-i18n="palette.caldera">Caldera (warm)</option>
+            <option value="slate" data-i18n="palette.slate">Slate (cool)</option>
+            <option value="classic" data-i18n="palette.classic">Classic</option>
+          </select>
+        </label>
+        <label class="switch-row"><span data-i18n="ui.question">Question marks (?)</span>
           <input id="set-question" type="checkbox" class="switch" /></label>
-        <label class="switch-row"><span>Chording</span>
+        <label class="switch-row"><span data-i18n="ui.chording">Chording</span>
           <input id="set-chord" type="checkbox" class="switch" checked /></label>
-        <label class="switch-row"><span>Safe first click</span>
+        <label class="switch-row"><span data-i18n="ui.safeFirst">Safe first click</span>
           <input id="set-safe" type="checkbox" class="switch" checked /></label>
-        <label class="switch-row"><span>No-guess boards <small>solvable by logic alone</small></span>
+        <label class="switch-row"><span><span data-i18n="ui.noGuessBoards">No-guess boards</span> <small><span data-i18n="ui.logicOnly">solvable by logic alone</span></small></span>
           <input id="set-noguess" type="checkbox" class="switch" /></label>
-        <label class="switch-row"><span>Sound effects</span>
+        <label class="switch-row"><span data-i18n="ui.sound">Sound effects</span>
           <input id="set-sound" type="checkbox" class="switch" /></label>
-        <label class="switch-row"><span>High contrast <small>color-blind-safe numbers</small></span>
+        <label class="switch-row"><span><span data-i18n="ui.contrast">High contrast</span> <small><span data-i18n="ui.colorBlind">color-blind-safe numbers</span></small></span>
           <input id="set-contrast" type="checkbox" class="switch" /></label>
-        <label class="switch-row"><span>Animations</span>
+        <label class="switch-row"><span data-i18n="ui.animations">Animations</span>
           <input id="set-anim" type="checkbox" class="switch" checked /></label>
-        <label class="switch-row"><span>Haptics (mobile)</span>
+        <label class="switch-row"><span data-i18n="ui.haptics">Haptics (mobile)</span>
           <input id="set-haptics" type="checkbox" class="switch" checked /></label>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-primary" id="settings-close" type="button">Done</button>
+        <button class="btn btn-primary" id="settings-close" type="button"><span data-i18n="ui.done">Done</span></button>
       </div>
     </div>
   </dialog>
@@ -227,17 +234,17 @@
   <!-- Leaderboard dialog -->
   <dialog id="leaderboard-dialog" class="modal">
     <div class="modal-body">
-      <h2 class="modal-title">🏆 Leaderboard</h2>
-      <div class="segmented lb-tabs" role="group" aria-label="Leaderboard difficulty">
-        <button class="seg lb-seg" data-lbdiff="beginner" type="button">Beginner</button>
-        <button class="seg lb-seg" data-lbdiff="intermediate" type="button">Intermediate</button>
-        <button class="seg lb-seg" data-lbdiff="expert" type="button">Expert</button>
-        <button class="seg lb-seg" data-lbdiff="daily" type="button">Daily</button>
+      <h2 class="modal-title"><span data-i18n="ui.leaderboardHeading">🏆 Leaderboard</span></h2>
+      <div class="segmented lb-tabs" role="group" aria-label="Leaderboard difficulty" data-i18n-aria-label="ui.leaderboardDifficulty">
+        <button class="seg lb-seg" data-lbdiff="beginner" type="button"><span data-i18n="difficulty.beginner">Beginner</span></button>
+        <button class="seg lb-seg" data-lbdiff="intermediate" type="button"><span data-i18n="difficulty.intermediate">Intermediate</span></button>
+        <button class="seg lb-seg" data-lbdiff="expert" type="button"><span data-i18n="difficulty.expert">Expert</span></button>
+        <button class="seg lb-seg" data-lbdiff="daily" type="button"><span data-i18n="difficulty.daily">Daily</span></button>
         <span class="seg-thumb" aria-hidden="true"></span>
       </div>
       <div id="lb-list" class="lb-list" aria-live="polite"></div>
       <div class="modal-actions">
-        <button class="btn btn-primary" id="lb-close" type="button">Close</button>
+        <button class="btn btn-primary" id="lb-close" type="button"><span data-i18n="ui.close">Close</span></button>
       </div>
     </div>
   </dialog>

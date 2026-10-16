@@ -1,3 +1,4 @@
+import { t, applyTranslations, setLanguage, difficultyLabel } from "./i18n.js";
 /* ============================================================
    main.js — composition root.
    Instantiates engine + renderer + input + timer + ui, wires the
@@ -35,6 +36,7 @@ const boardEl = document.getElementById("board");
 const confettiEl = document.getElementById("confetti");
 
 const settings = settingsStore.load();
+setLanguage(settings.language);
 const ui = new UI();
 const renderer = new Renderer(boardEl);
 let engine = new Engine({ ...presetConfig("beginner"), safeFirstClick: settings.safeFirstClick, allowQuestion: settings.question });
@@ -183,7 +185,7 @@ function onWin() {
 
   const ctx = winContext(true, timeMs);
   const fresh = achievements.evaluate(ctx);
-  announce(`You win! Cleared in ${formatTime(timeMs)}.` + (isBest ? " New best time." : ""));
+  announce("game.announceWin", () => ({ time: formatTime(timeMs) }), isBest ? "game.bestAnnouncement" : null);
   saveReplay(true, timeMs);
   clearSavedGame();
   ui.refreshStats(stats.all());
@@ -192,7 +194,7 @@ function onWin() {
   const lbEligible = leaderboard.isConfigured() && run.rankable && !!run.id && !engine.assisted &&
     (!!DIFFICULTIES[currentDiff] || run.daily) && !isCustomRun();
   const lbDiff = run.daily ? daily.dailyDiffKey(run.dailyKey) : currentDiff;
-  const lbLabel = run.daily ? `Daily ${run.dailyKey}` : ((DIFFICULTIES[currentDiff] || {}).label || currentDiff);
+  const lbLabel = difficultyLabel(lbDiff);
 
   const wonRun = run;
   const proof = {
@@ -221,7 +223,7 @@ function winContext(won, timeMs) {
   return {
     won, difficulty: currentDiff, timeMs, assisted: engine.assisted,
     noGuess: run.noGuess, daily: run.daily, dailyKey: run.dailyKey,
-    title: run.daily ? `Daily ${run.dailyKey}` : (DIFFICULTIES[currentDiff] || {}).label || "Custom",
+    title: run.daily ? t("game.dailyDate", { date: run.dailyKey }) : difficultyLabel(currentDiff),
     threeBV: run.threeBV, threeBVps: bvps, efficiency: eff,
     streak: s.streak || 0, totalWins,
   };
@@ -236,12 +238,12 @@ async function submitWin(submission, name) {
   finally { submissions.delete(submission.id); }
   if (_pendingWin !== submission) return;
   if (!res.ok) {
-    ui.setOverlayRank(res.error || "Could not submit your score.");
+    ui.setOverlayRank(res.errorKey || "error.submit");
     ui.showOverlaySubmit(name);
     return;
   }
   _pendingWin = null;
-  ui.setOverlayRank(`#${res.rank} on the ${submission.label} leaderboard 🏆`);
+  ui.setOverlayRank("leaderboard.rank", { rank: res.rank, difficulty: submission.difficulty });
 }
 
 let leaderboardRequest = 0;
@@ -259,7 +261,7 @@ function onLose() {
   ui.setUndo(engine.canUndo);
   wellEl.classList.add("lost");
   stats.record(diffKey(), { won: false, timeMs: engine.elapsedMs(), assisted: engine.assisted });
-  announce("You hit a mine. Game over.");
+  announce("game.announceLoss");
   saveReplay(false, engine.elapsedMs());
   const lostRun = run;
   setTimeout(() => { if (run === lostRun && !replaying && engine.status === "lost") ui.showResult({ won: false }); }, 600);
@@ -310,7 +312,7 @@ const handlers = {
 function rt() { return Math.round(engine.elapsedMs()); }
 
 function maybeAnnounceFlag(i) {
-  announce(`${engine.minesRemaining} mines remaining`);
+  announce("game.remaining", { count: engine.minesRemaining });
 }
 
 const input = new Input(boardEl, renderer, handlers, settings);
@@ -341,7 +343,7 @@ function doUndo() {
   ui.setUndo(engine.canUndo);
   ui.setModeBadge(run); // assisted marker
   run.moves.push({ a: "u", t: rt() });
-  announce("Undid last move.");
+  announce("game.undone");
   if (engine.status === "playing") saveGame();
 }
 
@@ -356,7 +358,7 @@ function doHint() {
   }
   const safe = solver.hint(engine);
   if (safe == null) {
-    announce("No certain move — you may need to guess.");
+    announce("game.noSafeMove");
     flashHintEmpty();
     return;
   }
@@ -379,8 +381,8 @@ async function doShare() {
   const ctx = last ? last.ctx : winContext(engine.status === "won", engine.elapsedMs());
   const text = buildShare(ctx, engine);
   const ok = await copyText(text);
-  ui.flashShare(ok ? "Copied to clipboard!" : "Couldn't copy.");
-  announce(ok ? "Result copied to clipboard." : "Copy failed.");
+  ui.flashShare(ok ? "share.copied" : "share.failed");
+  announce(ok ? "share.announced" : "share.copyFailed");
 }
 
 /* ---------- replay ---------- */
@@ -405,7 +407,7 @@ function stopReplay() {
 
 function doReplay() {
   const last = storage.get("lastGame", null);
-  if (!last || !last.moves || !last.moves.length) { announce("No game to replay yet."); return; }
+  if (!last || !last.moves || !last.moves.length) { announce("game.noReplay"); return; }
   stopReplay();
   _pendingWin = null;
   run.rankable = false;
@@ -432,7 +434,7 @@ function doReplay() {
   wellEl.classList.remove("lost", "win-glow");
   wellEl.classList.add("replaying");
   replaying = true;
-  announce("Replaying last game.");
+  announce("game.replaying");
 
   const moves = last.moves;
   let prevT = 0;
@@ -496,9 +498,16 @@ function tryRestore() {
 
 /* ---------- live region ---------- */
 let announceTimer = 0;
-function announce(msg) {
+let lastAnnouncement = null;
+function renderAnnouncement() {
+  if (!lastAnnouncement) return;
+  const { key, values, suffix } = lastAnnouncement;
+  live.textContent = t(key, typeof values === 'function' ? values() : values) + (suffix ? t(suffix) : '');
+}
+function announce(key, values = {}, suffix = null) {
+  lastAnnouncement = { key, values, suffix };
   clearTimeout(announceTimer);
-  announceTimer = setTimeout(() => { live.textContent = msg; }, 120);
+  announceTimer = setTimeout(renderAnnouncement, 120);
 }
 
 /* ---------- zoom ---------- */
@@ -531,7 +540,7 @@ ui.bind({
       : settings.theme === "dark" ? "light" : "system";
     applyTheme();
     settingsStore.save(settings);
-    announce(`Theme: ${settings.theme}`);
+    announce("theme.changed", () => ({ theme: t("theme." + (settings.theme === "system" ? "system" : settings.theme)) }));
   },
   onOpenStats: () => ui.openStats(stats.all(), achievements.unlockedSet()),
   onResetStats: () => {
@@ -557,11 +566,20 @@ ui.bind({
     }
     settings[key] = val;
     settingsStore.save(settings);
+    if (key === "language") setLanguage(val);
     if (key === "palette" || key === "animations" || key === "contrast") applyTheme();
     if (key === "sound") setSound(val);
     if (key === "safeFirstClick") { ui.safeFirstClick = val; if (!engine.firstClickDone && !run.daily) engine.safeFirstClick = val; }
     if (key === "question") engine.allowQuestion = val;
   },
+});
+
+window.addEventListener('caldera-languagechange', () => {
+  ui.refreshLanguage();
+  renderer.refreshLabels();
+  ui.setBest(stats.bestFor(diffKey()));
+  ui.refreshStats(stats.all());
+  renderAnnouncement();
 });
 
 /* react to OS theme changes while in system mode */
@@ -573,6 +591,7 @@ if (window.matchMedia) {
 window.addEventListener("resize", () => renderer.fit());
 
 /* ---------- boot ---------- */
+applyTranslations();
 applyTheme();
 setSound(settings.sound);
 ui.reflectSettings(settings);

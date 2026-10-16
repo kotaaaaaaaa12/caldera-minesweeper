@@ -191,3 +191,14 @@
 @media (max-width: 560px) {
   .tool-group { flex-wrap: wrap; justify-content: center; }
 }
+
+/* Localized labels can wrap without shrinking touch targets. */
+.switch-row > span { min-width: 0; overflow-wrap: anywhere; }
+.switch-row .select { max-width: 50%; }
+.overlay-actions { flex-wrap: wrap; }
+html[lang="ja"] .app-foot { line-height: 1.8; }
+@media (max-width: 380px) {
+  .lb-tabs { flex-wrap: wrap; }
+  .lb-tabs .seg { flex-basis: 40%; }
+  .brand-name span { font-size: 10px; }
+}

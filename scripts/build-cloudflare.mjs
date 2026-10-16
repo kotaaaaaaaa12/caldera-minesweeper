@@ -3,7 +3,7 @@ const root = new URL('../', import.meta.url);
 const dist = new URL('dist/', root);
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
-for (const path of ['index.html','manifest.webmanifest','config.js','sw.js','assets','styles','src']) {
+for (const path of ['index.html','manifest.webmanifest','manifest-ja.webmanifest','config.js','sw.js','assets','styles','src']) {
   await cp(new URL(path, root), new URL(path, dist), { recursive: true });
 }
 await writeFile(new URL('_headers', dist), `/*

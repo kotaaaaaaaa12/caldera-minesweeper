@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 /* ============================================================
    timer.js — drift-free 1Hz ticker driven by the engine clock.
    The engine owns elapsed time; this just polls + renders it,
@@ -55,8 +56,7 @@ export function formatClock(ms) {
 
 export function formatTime(ms) {
   const secs = ms / 1000;
-  if (secs < 60) return `${secs.toFixed(1)}s`;
-  const m = Math.floor(secs / 60);
-  const s = Math.round(secs % 60);
-  return `${m}m ${s}s`;
+  if (secs < 60) return t("time.seconds", { seconds: secs.toFixed(1) });
+  const rounded = Math.round(secs);
+  return t("time.minutesSeconds", { minutes: Math.floor(rounded / 60), seconds: rounded % 60 });
 }

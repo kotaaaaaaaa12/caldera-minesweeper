@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 /* ============================================================
    render.js — DOM view layer.
    Builds all cell nodes ONCE into a DocumentFragment, keeps a
@@ -142,18 +143,22 @@ export class Renderer {
     const e = this.engine;
     const s = e.state;
     const x = e.xOf(i) + 1, y = e.yOf(i) + 1;
-    const pos = `row ${y}, column ${x}`;
-    if (isExploded(s, i)) return `${pos}, exploded mine`;
-    if (isRevealed(s, i) && isMine(s, i)) return `${pos}, mine`;
-    if (isWrongFlag(s, i)) return `${pos}, wrong flag`;
+    const position = t('cell.position', { row: y, column: x });
+    if (isExploded(s, i)) return t('cell.exploded', { position });
+    if (isRevealed(s, i) && isMine(s, i)) return t('cell.mine', { position });
+    if (isWrongFlag(s, i)) return t('cell.wrong', { position });
     if (isRevealed(s, i)) {
-      const a = e.adjacency[i];
-      return a > 0 ? `${pos}, ${a} ${a === 1 ? "mine" : "mines"} adjacent` : `${pos}, empty`;
+      const count = e.adjacency[i];
+      return t(count === 0 ? 'cell.empty' : count === 1 ? 'cell.adjacentOne' : 'cell.adjacent', { position, count });
     }
-    if (isFlagged(s, i)) return `${pos}, flagged`;
-    if (isQuestion(s, i)) return `${pos}, question mark`;
-    if (e.notes[i]) return `${pos}, pencil mark ${e.notes[i]}`;
-    return `${pos}, hidden`;
+    if (isFlagged(s, i)) return t('cell.flagged', { position });
+    if (isQuestion(s, i)) return t('cell.question', { position });
+    if (e.notes[i]) return t('cell.note', { position, number: e.notes[i] });
+    return t('cell.hidden', { position });
+  }
+
+  refreshLabels() {
+    this.cells.forEach((cell, i) => cell.setAttribute('aria-label', this.label(i)));
   }
 
   /** focus: move DOM focus to the cell. visual: show the cursor outline

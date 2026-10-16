@@ -1,3 +1,4 @@
+import { t, applyTranslations, difficultyLabel, languagePreference } from "./i18n.js";
 /* ============================================================
    ui.js — chrome: HUD, difficulty control, dialogs, theme,
    result overlay, best-time badge. Pure view + event wiring;
@@ -9,9 +10,9 @@ import { ACHIEVEMENTS } from "./achievements.js";
 import { dailyDiffKey } from "./daily.js";
 
 export const DIFFICULTIES = {
-  beginner:     { w: 9,  h: 9,  m: 10, label: "Beginner" },
-  intermediate: { w: 16, h: 16, m: 40, label: "Intermediate" },
-  expert:       { w: 30, h: 16, m: 99, label: "Expert" },
+  beginner:     { w: 9,  h: 9,  m: 10, get label() { return t("difficulty.beginner"); } },
+  intermediate: { w: 16, h: 16, m: 40, get label() { return t("difficulty.intermediate"); } },
+  expert:       { w: 30, h: 16, m: 99, get label() { return t("difficulty.expert"); } },
 };
 
 const FACES = { idle: "🙂", playing: "🙂", surprise: "😮", won: "😎", lost: "😵" };
@@ -32,7 +33,7 @@ export class UI {
       timerReadout: $("timer-readout"),
       face: $("btn-reset"),
       faceGlyph: $("btn-reset").querySelector(".face-glyph"),
-      segs: [...document.querySelectorAll(".seg")],
+      segs: [...document.querySelectorAll("[data-diff]")],
       segThumb: document.querySelector(".seg-thumb"),
       segmented: document.querySelector(".segmented"),
       flagMode: $("btn-flag-mode"),
@@ -83,6 +84,7 @@ export class UI {
       // settings dialog
       setDlg: $("settings-dialog"),
       setName: $("set-name"),
+      setLanguage: $("set-language"),
       setPalette: $("set-palette"), setQuestion: $("set-question"),
       setChord: $("set-chord"), setSafe: $("set-safe"),
       setAnim: $("set-anim"), setHaptics: $("set-haptics"),
@@ -164,7 +166,7 @@ export class UI {
 
     // settings dialog
     const setMap = {
-      setPalette: "palette", setQuestion: "question", setChord: "chord",
+      setLanguage: "language", setPalette: "palette", setQuestion: "question", setChord: "chord",
       setSafe: "safeFirstClick", setAnim: "animations", setHaptics: "haptics",
       setSound: "sound", setNoGuess: "noGuess", setContrast: "contrast",
     };
@@ -235,8 +237,9 @@ export class UI {
     const b = this.el.modeBadge;
     if (!b) return;
     const tags = [];
-    if (run.daily) tags.push("📅 Daily");
-    if (run.noGuess) tags.push("🧠 No-guess");
+    this._modeRun = run;
+    if (run.daily) tags.push("📅 " + t("difficulty.daily"));
+    if (run.noGuess) tags.push("🧠 " + t("game.noGuess"));
     b.innerHTML = tags.map((t) => `<span class="mode-tag">${t}</span>`).join("");
     b.classList.toggle("hidden", tags.length === 0);
   }
@@ -251,8 +254,13 @@ export class UI {
     if (!host) return;
     const node = document.createElement("div");
     node.className = "toast";
-    node.innerHTML = `<span class="toast-ico">${icon}</span>
-      <span class="toast-text"><strong>${escapeHtml(label)}</strong>${sub ? `<span>${escapeHtml(sub)}</span>` : ""}</span>`;
+    node._translateToast = () => {
+      const title = typeof label === 'function' ? label() : label;
+      const description = typeof sub === 'function' ? sub() : sub;
+      node.innerHTML = `<span class="toast-ico">${icon}</span>
+        <span class="toast-text"><strong>${escapeHtml(title)}</strong>${description ? `<span>${escapeHtml(description)}</span>` : ""}</span>`;
+    };
+    node._translateToast();
     host.appendChild(node);
     requestAnimationFrame(() => node.classList.add("in"));
     setTimeout(() => {
@@ -261,34 +269,56 @@ export class UI {
     }, 3200);
   }
   toastAchievements(list) {
-    list.forEach((a, i) => setTimeout(() => this.toast(a.icon, `Achievement: ${a.label}`, a.desc), i * 400));
+    list.forEach((a, i) => setTimeout(() => this.toast(a.icon, () => t("achievements.unlocked", { name: a.label }), () => a.desc), i * 400));
   }
-  flashShare(msg) { this.toast("📋", msg); }
+  flashShare(key) { this.toast("📋", () => t(key)); }
 
   /* ---------- result overlay ---------- */
   showResult({ won, timeMs, isBest, metrics }) {
     const e = this.el;
     e.ovEmoji.textContent = won ? "🎉" : "💥";
-    e.ovTitle.textContent = won ? "You win!" : "Boom.";
-    e.ovSub.textContent = won ? `Cleared in ${formatTime(timeMs)}` : "You hit a mine.";
+    this._result = { won, timeMs, isBest, metrics };
+    this._rank = null;
+    this.renderResultText();
     e.ovBest.classList.toggle("hidden", !(won && isBest));
     e.ovRank.classList.add("hidden");
     e.ovLb.classList.add("hidden");
+    this._prevFocus = document.activeElement;
+    e.overlay.classList.remove("hidden");
+    // move focus into the result card so keyboard/SR users land on the action
+    requestAnimationFrame(() => e.ovAgain.focus());
+  }
+
+  renderResultText() {
+    if (!this._result) return;
+    const { won, timeMs, metrics } = this._result;
+    const e = this.el;
+    e.ovTitle.textContent = t(won ? 'game.won' : 'game.lost');
+    e.ovSub.textContent = won ? t('game.cleared', { time: formatTime(timeMs) }) : t('game.hitMine');
     if (e.ovMetrics) {
       if (won && metrics && metrics.threeBV) {
         const bits = [`3BV ${metrics.threeBV}`];
-        if (metrics.threeBVps != null) bits.push(`${metrics.threeBVps.toFixed(2)}/s`);
-        if (metrics.efficiency != null) bits.push(`${Math.round(metrics.efficiency * 100)}% eff`);
+        if (metrics.threeBVps != null) bits.push(t("metric.speed", { value: metrics.threeBVps.toFixed(2) }));
+        if (metrics.efficiency != null) bits.push(t("metric.efficiency", { value: Math.round(metrics.efficiency * 100) }));
         e.ovMetrics.textContent = bits.join("  ·  ");
         e.ovMetrics.classList.remove("hidden");
       } else {
         e.ovMetrics.classList.add("hidden");
       }
     }
-    this._prevFocus = document.activeElement;
-    e.overlay.classList.remove("hidden");
-    // move focus into the result card so keyboard/SR users land on the action
-    requestAnimationFrame(() => e.ovAgain.focus());
+  }
+
+  refreshLanguage() {
+    applyTranslations();
+    this.el.setLanguage.value = languagePreference();
+    if (this._modeRun) this.setModeBadge(this._modeRun);
+    this.renderResultText();
+    this.el.toasts.querySelectorAll(".toast").forEach(node => node._translateToast?.());
+    if (this._rank) this.renderRankText();
+    if (this._leaderboardData) this.renderLeaderboard(this._leaderboardData);
+    else if (this._leaderboardLoading) this.renderLeaderboardLoading();
+    this._syncCustom();
+    this.moveSegThumb();
   }
 
   /** show the inline name-entry form in the win overlay */
@@ -299,11 +329,19 @@ export class UI {
     requestAnimationFrame(() => e.ovName.focus());
   }
   /** replace the submit form with a rank confirmation */
-  setOverlayRank(text) {
+  setOverlayRank(key, values = {}) {
+    this._rank = { key, values };
     const e = this.el;
     e.ovLb.classList.add("hidden");
-    e.ovRank.textContent = text;
+    this.renderRankText();
     e.ovRank.classList.remove("hidden");
+  }
+
+  renderRankText() {
+    const { key, values } = this._rank;
+    const translated = { ...values };
+    if (translated.difficulty) translated.difficulty = difficultyLabel(translated.difficulty);
+    this.el.ovRank.textContent = t(key, translated);
   }
 
   /* ---------- leaderboard dialog ---------- */
@@ -316,20 +354,25 @@ export class UI {
     this.el.lbSegs.forEach((s) => s.setAttribute("aria-pressed", String(s.dataset.lbdiff === (diff.startsWith("daily-") ? "daily" : diff))));
   }
   renderLeaderboardLoading() {
-    this.el.lbList.innerHTML = `<div class="lb-empty">Loading…</div>`;
+    this._leaderboardLoading = true;
+    this._leaderboardData = null;
+    this.el.lbList.innerHTML = `<div class="lb-empty">${t("leaderboard.loading")}</div>`;
   }
-  renderLeaderboard({ rows, offline, error }) {
+  renderLeaderboard(data) {
+    this._leaderboardData = data;
+    this._leaderboardLoading = false;
+    const { rows, offline, error, errorKey } = data;
     const el = this.el.lbList;
     if (offline) {
-      el.innerHTML = `<div class="lb-empty">Online leaderboard is unavailable.<br>Your local records are still saved on this device.</div>`;
+      el.innerHTML = `<div class="lb-empty">${t("leaderboard.offline")}</div>`;
       return;
     }
-    if (error) { el.innerHTML = `<div class="lb-empty">Couldn't load scores.<br>${escapeHtml(error)}</div>`; return; }
-    if (!rows || !rows.length) { el.innerHTML = `<div class="lb-empty">No scores yet — be the first!</div>`; return; }
+    if (error) { el.innerHTML = `<div class="lb-empty">${t("leaderboard.loadError")}<br>${escapeHtml(t(errorKey || "error.unavailable"))}</div>`; return; }
+    if (!rows || !rows.length) { el.innerHTML = `<div class="lb-empty">${t("leaderboard.empty")}</div>`; return; }
     el.innerHTML = rows.map((r, i) => `
       <div class="lb-row${i < 3 ? " podium" : ""}">
         <span class="rank">${i + 1}</span>
-        <span class="who">${escapeHtml(r.name)}</span>
+        <span class="who">${escapeHtml(r.name === "Anonymous" ? t("ui.anonymous") : r.name)}</span>
         <span class="when">${formatTime(r.time_ms)}</span>
       </div>`).join("");
   }
@@ -359,7 +402,7 @@ export class UI {
     const pct = Math.round((m / (w * h)) * 100);
     e.densFill.style.width = Math.min(100, pct) + "%";
     e.densPct.textContent = pct + "%";
-    e.densNote.textContent = pct < 12 ? "easy" : pct < 18 ? "comfortable" : pct < 25 ? "tricky" : "brutal";
+    e.densNote.textContent = t(pct < 12 ? "density.easy" : pct < 18 ? "density.comfortable" : pct < 25 ? "density.tricky" : "density.brutal");
   }
 
   /* ---------- stats dialog ---------- */
@@ -379,9 +422,9 @@ export class UI {
       </div>`);
     }
     e.statsContent.innerHTML = rows.join("") +
-      `<div class="stat-summary">Current streak: ${statsData.streak || 0} · Best streak: ${statsData.bestStreak || 0}</div>` +
+      `<div class="stat-summary">${t("stats.streak", { current: statsData.streak || 0, best: statsData.bestStreak || 0 })}</div>` +
       this._achievementsHtml(this._unlocked || new Set());
-    e.statsDlg.showModal();
+    if (!e.statsDlg.open) e.statsDlg.showModal();
   }
   _achievementsHtml(unlocked) {
     if (!ACHIEVEMENTS.length) return "";
@@ -393,7 +436,7 @@ export class UI {
       </div>`;
     }).join("");
     const n = [...unlocked].filter((id) => ACHIEVEMENTS.some((a) => a.id === id)).length;
-    return `<div class="ach-head">Achievements <span>${n}/${ACHIEVEMENTS.length}</span></div>
+    return `<div class="ach-head">${t("achievements.title")} <span>${n}/${ACHIEVEMENTS.length}</span></div>
       <div class="ach-grid">${cells}</div>`;
   }
   refreshStats(statsData) { if (this.el.statsDlg.open) this.openStats(statsData, this._unlocked); }
@@ -403,6 +446,7 @@ export class UI {
   reflectSettings(s) {
     const e = this.el;
     this.safeFirstClick = s.safeFirstClick;
+    e.setLanguage.value = s.language || "auto";
     e.setName.value = s.name || "";
     e.setPalette.value = s.palette;
     e.setQuestion.checked = s.question;

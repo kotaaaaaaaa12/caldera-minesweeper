@@ -12,6 +12,7 @@ A modern browser Minesweeper game, based on [platret/caldera-minesweeper](https:
 - Themes, sound, achievements, statistics, keyboard accessibility, and touch controls
 - Automatic local resume and offline/PWA support
 - Shared online leaderboards backed by D1, including Daily rankings
+- Complete English/Japanese i18n, automatic browser-language selection, and a persistent language switch
 
 The static game and API deploy together as one Worker. No Container or Supabase account is required. Run `npx wrangler deploy`; Wrangler automatically creates or reuses the D1 database and binds it to the Worker. No database ID needs to be entered. The custom Wrangler build prepares static assets automatically.
 
