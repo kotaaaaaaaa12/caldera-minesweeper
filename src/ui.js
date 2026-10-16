@@ -347,6 +347,7 @@ export class UI {
     const { key, values } = this._rank;
     const translated = { ...values };
     if (translated.difficulty) translated.difficulty = difficultyLabel(translated.difficulty);
+    if (translated.bestTimeMs != null) translated.time = formatTime(translated.bestTimeMs);
     this.el.ovRank.textContent = t(key, translated);
   }
 

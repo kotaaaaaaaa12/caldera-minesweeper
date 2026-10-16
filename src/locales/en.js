@@ -176,5 +176,10 @@ export default {
   "achievement.fast-3bv.label": "Speed Demon",
   "achievement.fast-3bv.desc": "Solve at 2+ 3BV/s.",
   "achievement.centurion.label": "Centurion",
-  "achievement.centurion.desc": "Win 100 games total."
+  "achievement.centurion.desc": "Win 100 games total.",
+  "leaderboard.bestRank": "#{rank} on the {difficulty} leaderboard (best: {time}) 🏆",
+  "leaderboard.nameUpdated": "Leaderboard name updated.",
+  "leaderboard.namePending": "Name saved on this device. Online updates will retry when connected.",
+  "error.profile": "The player profile is invalid.",
+  "error.device": "This device could not be verified."
 };

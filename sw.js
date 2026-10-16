@@ -3,7 +3,7 @@
    Bump CACHE when shipping changes to invalidate old assets.
    ============================================================ */
 
-const CACHE = "caldera-cloudflare-d1-clear-ui-v3";
+const CACHE = "caldera-cloudflare-d1-device-best-v4";
 const ASSETS = [
   "./",
   "./index.html",
@@ -15,6 +15,7 @@ const ASSETS = [
   "./src/locales/ja.js",
   "./assets/favicon.svg",
   "./src/leaderboard.js",
+  "./src/player.js",
   "./styles/tokens.css",
   "./styles/base.css",
   "./styles/layout.css",

@@ -1,3 +1,4 @@
+import { cleanName } from './player.js';
 import { Engine } from '../src/engine.js';
 import { makeNoGuessGenerator } from '../src/generate.js';
 import { seedForDate, dailySafeIndex } from '../src/daily.js';
@@ -12,7 +13,7 @@ export function validateScore(body) {
   requireValid(typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id));
   requireValid(Number.isInteger(timeMs) && timeMs >= 1 && timeMs <= 86400000);
   requireValid(typeof body.name === 'string' && body.name.length <= 100);
-  const name = body.name.normalize('NFKC').replace(/[\p{Cc}\p{Cf}]/gu, '').trim().slice(0, 20) || 'Anonymous';
+  const name = cleanName(body.name);
   requireValid(proof && Number.isInteger(proof.seed) && proof.seed >= 0 && proof.seed <= 0xffffffff);
   requireValid(typeof proof.safeFirstClick === 'boolean' && typeof proof.allowQuestion === 'boolean' && typeof proof.noGuess === 'boolean');
   requireValid(proof.assisted === false);

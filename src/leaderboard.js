@@ -1,6 +1,9 @@
 import { t } from "./i18n.js";
+import { playerProfile, profileSynced, storedPlayer } from "./player.js";
 /* Same-origin D1 leaderboard client. Network failures never interrupt play. */
 const errors = {
+  "Invalid player profile.": "error.profile",
+  "This device could not be verified.": "error.device",
   "Not found.": "error.notFound",
   "Method not allowed.": "error.method",
   "The leaderboard database is not connected.": "error.database",
@@ -28,9 +31,36 @@ async function request(path, options = {}) {
   } catch { return failure('error.network'); }
   finally { clearTimeout(timeout); }
 }
+let mutations = Promise.resolve();
+function mutate(operation) {
+  const pending = mutations.then(operation);
+  mutations = pending.catch(() => {});
+  return pending;
+}
+function sendProfile(path, player, score = {}) {
+  return mutate(async () => {
+    const result = await request(path, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...score, playerId: player.playerId, playerToken: player.playerToken,
+        name: player.name, nameVersion: player.nameVersion }) });
+    if (result.ok) profileSynced(player);
+    return result;
+  });
+}
 export async function submitScore(score) {
   if (!isConfigured()) return { ok: false, offline: true };
-  return request('/scores', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(score) });
+  return sendProfile('/scores', playerProfile(score.name), score);
+}
+export async function updateName(name) {
+  const player = playerProfile(name);
+  if (!isConfigured()) return { ok: false, offline: true };
+  return sendProfile('/profile', player);
+}
+export async function retryName(name) {
+  if (!storedPlayer() && !name) return { ok: true, skipped: true };
+  const player = playerProfile(name);
+  if (!player.pending) return { ok: true, skipped: true };
+  if (!isConfigured()) return { ok: false, offline: true };
+  return sendProfile('/profile', player);
 }
 export async function topScores(difficulty, limit = 10) {
   if (!isConfigured()) return { ok: false, offline: true, rows: [] };

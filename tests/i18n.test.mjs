@@ -36,7 +36,11 @@ test('the complete application changes language without resetting gameplay or fo
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
   localStorage.setItem('minesweeper.caldera.v1', JSON.stringify({ settings: { animations: false } }));
-  globalThis.fetch = async () => Response.json({ ok: true, rows: [{ name: 'Player', time_ms: 12500, created_at: '2026-10-16' }] });
+  const requests = [];
+  globalThis.fetch = async (path, options = {}) => {
+    if (options.body) requests.push({ path, body: JSON.parse(options.body) });
+    return Response.json({ ok: true, rows: [{ name: 'Player', time_ms: 12500, created_at: '2026-10-16' }] });
+  };
   let i18n;
   try {
     await import('../src/main.js');
@@ -81,6 +85,18 @@ test('the complete application changes language without resetting gameplay or fo
     assert.equal(document.activeElement, $('#settings-dialog [data-panel-title]'));
     assert.equal($('#set-language').disabled, false);
     assert.equal($('#settings-close').matches(':focus'), false);
+    $('#set-name').value = 'Updated name';
+    $('#set-name').dispatchEvent(new dom.Event('change'));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(requests.at(-1).path, '/api/profile');
+    assert.equal(requests.at(-1).body.name, 'Updated name');
+    assert.equal(JSON.parse(localStorage.getItem('minesweeper.caldera.v1')).settings.name, 'Updated name');
+    const deviceId = requests.at(-1).body.playerId;
+    $('#set-name').value = 'Updated again';
+    $('#set-name').dispatchEvent(new dom.Event('change'));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(requests.at(-1).body.playerId, deviceId);
+    assert.equal(requests.at(-1).body.name, 'Updated again');
     $('#settings-close').click();
     $('#btn-leaderboard').click();
     assert.equal(document.activeElement, $('#leaderboard-dialog [data-panel-title]'));
@@ -111,6 +127,7 @@ test('the complete application changes language without resetting gameplay or fo
     assert.equal(document.activeElement, $('#overlay-title'));
     assert.equal($('#overlay-name').matches(':focus'), false);
     ui.setModeBadge({ daily: true, noGuess: true });
+    document.querySelectorAll(".toast").forEach(node => node.remove());
     ui.toastAchievements([ACHIEVEMENTS[0]]);
     await new Promise(resolve => setTimeout(resolve, 0));
     assert.match($(".toast strong").textContent, /実績解除：はじめてのクリア/);

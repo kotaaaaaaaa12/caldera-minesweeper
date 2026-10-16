@@ -253,7 +253,12 @@ async function submitWin(submission, name) {
     return;
   }
   _pendingWin = null;
-  ui.setOverlayRank("leaderboard.rank", { rank: res.rank, difficulty: submission.difficulty });
+  ui.setOverlayRank("leaderboard.bestRank", { rank: res.rank, difficulty: submission.difficulty, bestTimeMs: res.bestTimeMs });
+}
+
+async function syncRankingName(name) {
+  const result = await leaderboard.updateName(name);
+  ui.toast(result.ok ? '✓' : '↻', () => t(result.ok ? 'leaderboard.nameUpdated' : 'leaderboard.namePending'));
 }
 
 let leaderboardRequest = 0;
@@ -564,9 +569,10 @@ ui.bind({
   },
   onLbDifficulty: (d) => loadLeaderboard(d),
   onSubmitScore: (name) => {
-    const clean = (name || "").trim().slice(0, 20);
-    if (clean) { settings.name = clean; settingsStore.save(settings); ui.reflectSettings(settings); }
-    if (_pendingWin) submitWin(_pendingWin, clean || "Anonymous");
+    const clean = (name || "").trim().slice(0, 20) || "Anonymous";
+    settings.name = clean; settingsStore.save(settings); ui.reflectSettings(settings);
+    if (_pendingWin) submitWin(_pendingWin, clean);
+    else syncRankingName(clean);
   },
   onSetting: (key, val) => {
     if (["safeFirstClick", "question"].includes(key) && settings[key] !== val) {
@@ -576,12 +582,24 @@ ui.bind({
     }
     settings[key] = val;
     settingsStore.save(settings);
+    if (key === "name") syncRankingName(val);
     if (key === "language") setLanguage(val);
     if (key === "palette" || key === "animations" || key === "contrast") applyTheme();
     if (key === "sound") setSound(val);
     if (key === "safeFirstClick") { ui.safeFirstClick = val; if (!engine.firstClickDone && !run.daily) engine.safeFirstClick = val; }
     if (key === "question") engine.allowQuestion = val;
   },
+});
+
+// Synchronize pending names after reconnects and keep other tabs on the same name.
+window.addEventListener('online', () => leaderboard.retryName(settings.name));
+window.addEventListener('storage', event => {
+  if (event.key !== 'minesweeper.caldera.v1') return;
+  settings.name = settingsStore.load().name;
+  if (document.activeElement !== ui.el.setName) ui.el.setName.value = settings.name || '';
+});
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) leaderboard.retryName(settings.name);
 });
 
 window.addEventListener('caldera-languagechange', () => {
@@ -607,6 +625,7 @@ setSound(settings.sound);
 ui.reflectSettings(settings);
 ui.setZoomLabel(renderer.userZoom);
 if (!tryRestore()) newGame();
+leaderboard.retryName(settings.name);
 
 /* service worker (offline) — relative scope, GitHub-Pages friendly */
 if ("serviceWorker" in navigator) {

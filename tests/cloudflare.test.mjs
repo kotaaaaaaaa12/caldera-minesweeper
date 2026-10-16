@@ -42,7 +42,7 @@ export function winningScore(difficulty = 'beginner', noGuess = false, flagFirst
     if (!isMine(e.state,i) && !isRevealed(e.state,i)) act('r',i);
   }
   assert.equal(e.status,'won');
-  return { id: crypto.randomUUID(), name: 'Player', difficulty, timeMs: t,
+  return { id: crypto.randomUUID(), playerId: crypto.randomUUID(), playerToken: 'a'.repeat(64), nameVersion: 1, name: 'Player', difficulty, timeMs: t,
     proof: { seed, safeFirstClick: true, allowQuestion: false, noGuess, assisted: false, moves } };
 }
 
@@ -110,6 +110,83 @@ test('ranking sorts by time and keeps daily boards separate', async () => {
   assert.equal((await response.json()).rows[0].name,'Player');
   const daily = await call(environment,'/api/leaderboard?difficulty=daily-2026-10-15');
   assert.equal((await daily.json()).rows.length,1);
+});
+
+function forPlayer(score, player) {
+  return { ...score, playerId: player.playerId, playerToken: player.playerToken,
+    name: player.name, nameVersion: player.nameVersion };
+}
+function timed(score, factor) {
+  return { ...score, timeMs: score.timeMs * factor,
+    proof: { ...score.proof, moves: score.proof.moves.map(move => ({ ...move, t: move.t * factor })) } };
+}
+function profile(score, name, nameVersion) {
+  return { playerId: score.playerId, playerToken: score.playerToken, name, nameVersion };
+}
+
+test('one device keeps only its fastest time per difficulty, including concurrent and repeated submissions', async () => {
+  const environment = env();
+  const first = timed(winningScore(), 3);
+  assert.equal((await (await call(environment, '/api/scores', first)).json()).updated, true);
+  const slower = forPlayer(timed(winningScore(), 4), first);
+  const slowResult = await (await call(environment, '/api/scores', slower)).json();
+  assert.equal(slowResult.updated, false);
+  assert.equal(slowResult.bestTimeMs, first.timeMs);
+  const faster = forPlayer(winningScore(), first);
+  await Promise.all([
+    call(environment, '/api/scores', faster),
+    call(environment, '/api/scores', forPlayer(timed(winningScore(), 2), first)),
+  ]);
+  await call(environment, '/api/scores', faster);
+  const rows = (await (await call(environment, '/api/leaderboard?difficulty=beginner')).json()).rows;
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].time_ms, faster.timeMs);
+  await call(environment, '/api/scores', forPlayer(winningScore('expert'), first));
+  assert.equal((await (await call(environment, '/api/leaderboard?difficulty=expert')).json()).rows.length, 1);
+});
+
+test('renaming updates every device ranking and stale requests cannot revert the name', async () => {
+  const environment = env();
+  const first = winningScore();
+  await call(environment, '/api/scores', first);
+  await call(environment, '/api/scores', forPlayer(winningScore('expert'), first));
+  let response = await call(environment, '/api/profile', profile(first, 'New name', 3));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).name, 'New name');
+  await call(environment, '/api/profile', profile(first, 'Older name', 2));
+  await call(environment, '/api/scores', first);
+  for (const difficulty of ['beginner', 'expert']) {
+    const rows = (await (await call(environment, '/api/leaderboard?difficulty=' + difficulty)).json()).rows;
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].name, 'New name');
+  }
+});
+
+test('devices with identical names remain separate and cannot edit each other', async () => {
+  const environment = env();
+  const first = winningScore();
+  await call(environment, '/api/scores', first);
+  await call(environment, '/api/scores', winningScore());
+  const bad = { ...profile(first, 'Unauthorized', 9), playerToken: 'b'.repeat(64) };
+  assert.equal((await call(environment, '/api/profile', bad)).status, 403);
+  assert.equal((await call(environment, '/api/scores', { ...first, playerToken: bad.playerToken })).status, 403);
+  const rows = (await (await call(environment, '/api/leaderboard?difficulty=beginner')).json()).rows;
+  assert.equal(rows.length, 2);
+  assert.ok(rows.every(row => row.name === 'Player'));
+  assert.ok(rows.every(row => !('playerId' in row) && !('playerToken' in row)));
+});
+
+test('existing databases upgrade automatically and legacy records are preserved separately', async () => {
+  const environment = env();
+  await environment.DB.prepare(`CREATE TABLE scores (id TEXT PRIMARY KEY,name TEXT NOT NULL,difficulty TEXT NOT NULL,
+    time_ms INTEGER NOT NULL,created_at TEXT NOT NULL DEFAULT '2026-10-15')`).run();
+  await environment.DB.prepare("INSERT INTO scores(id,name,difficulty,time_ms) VALUES('legacy','Old player','beginner',12000)").run();
+  assert.equal((await call(environment, '/api/health')).status, 200);
+  assert.equal((await environment.DB.prepare('SELECT COUNT(*) AS count FROM scores').first()).count, 1);
+  await call(environment, '/api/scores', winningScore());
+  const rows = (await (await call(environment, '/api/leaderboard?difficulty=beginner')).json()).rows;
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].name, 'Player');
 });
 
 test('invalid API requests, cross-site writes, and unavailable DB are handled', async () => {

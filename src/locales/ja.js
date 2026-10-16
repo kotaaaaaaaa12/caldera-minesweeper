@@ -176,5 +176,10 @@ export default {
   "achievement.fast-3bv.label": "スピードの達人",
   "achievement.fast-3bv.desc": "3BV/秒が2以上の速さでクリアする。",
   "achievement.centurion.label": "100勝達成",
-  "achievement.centurion.desc": "通算100勝する。"
+  "achievement.centurion.desc": "通算100勝する。",
+  "leaderboard.bestRank": "{difficulty}ランキング：{rank}位（ベスト：{time}）🏆",
+  "leaderboard.nameUpdated": "ランキングの名前を更新しました。",
+  "leaderboard.namePending": "名前を端末に保存しました。接続できたときにランキングへ反映します。",
+  "error.profile": "プレイヤー情報が正しくありません。",
+  "error.device": "この端末のランキング情報を確認できませんでした。"
 };

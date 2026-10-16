@@ -1,4 +1,5 @@
 import { validateScore } from './validate.js';
+import { validatePlayer, savePlayer } from './player.js';
 
 const schemas = [
   `CREATE TABLE IF NOT EXISTS scores (
@@ -7,6 +8,16 @@ const schemas = [
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
   )`,
   'CREATE INDEX IF NOT EXISTS scores_ranking ON scores(difficulty, time_ms, created_at, id)',
+  `CREATE TABLE IF NOT EXISTS leaderboard_players (
+    id TEXT PRIMARY KEY, token_hash TEXT NOT NULL, name TEXT NOT NULL, name_version INTEGER NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS leaderboard_scores (
+    player_id TEXT NOT NULL REFERENCES leaderboard_players(id), difficulty TEXT NOT NULL,
+    run_id TEXT NOT NULL, time_ms INTEGER NOT NULL CHECK(time_ms > 0 AND time_ms <= 86400000),
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    PRIMARY KEY(player_id,difficulty)
+  )`,
+  'CREATE INDEX IF NOT EXISTS leaderboard_scores_ranking ON leaderboard_scores(difficulty,time_ms,created_at,player_id)',
   'CREATE TABLE IF NOT EXISTS rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, expires_at INTEGER NOT NULL)',
 ];
 const initialized = new WeakMap();
@@ -67,7 +78,7 @@ async function rateLimit(request, db) {
 }
 
 async function rank(db, difficulty, timeMs) {
-  const row = await db.prepare('SELECT COUNT(*) AS count FROM scores WHERE difficulty=? AND time_ms < ?')
+  const row = await db.prepare('SELECT COUNT(*) AS count FROM leaderboard_scores WHERE difficulty=? AND time_ms < ?')
     .bind(difficulty, timeMs).first();
   return Number(row.count) + 1;
 }
@@ -78,8 +89,8 @@ export default {
     if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
     const path = url.pathname;
     const reads = ['/api/leaderboard', '/api/rank', '/api/health'];
-    if (!reads.includes(path) && path !== '/api/scores') return json({ ok: false, error: 'Not found.' }, 404);
-    const method = path === '/api/scores' ? 'POST' : 'GET';
+    if (!reads.includes(path) && !['/api/scores', '/api/profile'].includes(path)) return json({ ok: false, error: 'Not found.' }, 404);
+    const method = ['/api/scores', '/api/profile'].includes(path) ? 'POST' : 'GET';
     if (request.method !== method) return json({ ok: false, error: 'Method not allowed.' }, 405, { Allow: method });
     if (!env.DB) return json({ ok: false, error: 'The leaderboard database is not connected.' }, 503);
     try {
@@ -96,8 +107,8 @@ export default {
         const raw = url.searchParams.get('limit') || '10';
         const limit = Number(raw);
         if (!Number.isInteger(limit) || limit < 1 || limit > 100) return json({ ok: false, error: 'Invalid limit.' }, 400);
-        const { results } = await env.DB.prepare(`SELECT name,time_ms,created_at FROM scores
-          WHERE difficulty=? ORDER BY time_ms,created_at,id LIMIT ?`).bind(difficulty, limit).all();
+        const { results } = await env.DB.prepare(`SELECT p.name,s.time_ms,s.created_at FROM leaderboard_scores s JOIN leaderboard_players p ON p.id=s.player_id
+          WHERE s.difficulty=? ORDER BY s.time_ms,s.created_at,s.player_id LIMIT ?`).bind(difficulty, limit).all();
         return json({ ok: true, rows: results });
       }
       const origin = request.headers.get('Origin');
@@ -108,16 +119,28 @@ export default {
         return json({ ok: false, error: 'Send JSON data.' }, 415);
       }
       if (!await rateLimit(request, env.DB)) return json({ ok: false, error: 'Too many submissions. Try again in a minute.' }, 429, { 'Retry-After': '60' });
-      let score;
-      try { score = validateScore(await limitedBody(request)); }
-      catch (error) {
-        return json({ ok: false, error: error.message === 'body-too-large' ? 'Submission is too large.' : 'Invalid score or replay.' }, error.message === 'body-too-large' ? 413 : 400);
+      let body, player, score;
+      try {
+        body = await limitedBody(request);
+        player = await validatePlayer(body);
+        if (path === '/api/scores') score = validateScore(body);
+      } catch (error) {
+        return json({ ok: false, error: error.message === 'body-too-large' ? 'Submission is too large.' :
+          path === '/api/profile' ? 'Invalid player profile.' : 'Invalid score or replay.' }, error.message === 'body-too-large' ? 413 : 400);
       }
-      await env.DB.prepare('INSERT INTO scores(id,name,difficulty,time_ms) VALUES(?,?,?,?) ON CONFLICT(id) DO NOTHING')
-        .bind(score.id, score.name, score.difficulty, score.timeMs).run();
-      const saved = await env.DB.prepare('SELECT name,difficulty,time_ms FROM scores WHERE id=?').bind(score.id).first();
-      if (saved.difficulty !== score.difficulty || saved.time_ms !== score.timeMs) return json({ ok: false, error: 'This run was already submitted.' }, 409);
-      return json({ ok: true, name: saved.name, rank: await rank(env.DB, score.difficulty, score.timeMs) });
+      const savedPlayer = await savePlayer(env.DB, player);
+      if (!savedPlayer) return json({ ok: false, error: 'This device could not be verified.' }, 403);
+      if (path === '/api/profile') return json({ ok: true, name: savedPlayer.name });
+      // The composite primary key and conditional upsert make concurrent updates safe.
+      const changed = await env.DB.prepare(`INSERT INTO leaderboard_scores(player_id,difficulty,run_id,time_ms) VALUES(?,?,?,?)
+        ON CONFLICT(player_id,difficulty) DO UPDATE SET
+          run_id=excluded.run_id,time_ms=excluded.time_ms,created_at=excluded.created_at
+        WHERE excluded.time_ms < leaderboard_scores.time_ms RETURNING time_ms`)
+        .bind(player.id, score.difficulty, score.id, score.timeMs).first();
+      const best = await env.DB.prepare('SELECT time_ms FROM leaderboard_scores WHERE player_id=? AND difficulty=?')
+        .bind(player.id, score.difficulty).first();
+      return json({ ok: true, name: savedPlayer.name, updated: !!changed, bestTimeMs: best.time_ms,
+        rank: await rank(env.DB, score.difficulty, best.time_ms) });
     } catch (error) {
       console.error('Leaderboard request failed:', error.message);
       return json({ ok: false, error: 'The leaderboard is temporarily unavailable.' }, 503);
