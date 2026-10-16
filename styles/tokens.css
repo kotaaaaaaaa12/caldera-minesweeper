@@ -1,8 +1,7 @@
 /* ============================================================
    Caldera — design tokens
    Theme = single [data-theme] attribute swap on <html>.
-   --accent (molten amber) is identical in every theme: it is the
-   shared signature and only ignites at moments of tension.
+   Surface colors and controls are tuned independently for each theme.
    ============================================================ */
 
 :root,
@@ -19,12 +18,12 @@
   --cell-revealed: #E7E1D7;
   --cell-revealed-2: #EDE8DF;
   --text: #1F1B16;
-  --muted: #8C8273;
+  --muted: #655B4E;
   --hairline: #E0D9CD;
   --glass: rgba(255, 255, 255, 0.55);
   --glass-border: rgba(255, 255, 255, 0.7);
 
-  --accent: #FF7A1A;
+  --accent: #B24808;
   --accent-soft: #FFB066;
   --mine-core: #C8410E;
   --flag: #E5484D;
@@ -32,14 +31,21 @@
   --win: #2FBF8F;
   --focus: #5B8CFF;
 
-  --n1: #3B7DD8;
-  --n2: #2FA46B;
-  --n3: #E5484D;
-  --n4: #6E56CF;
-  --n5: #C8410E;
-  --n6: #0E9CA8;
+  --n1: #245EA8;
+  --n2: #1B7142;
+  --n3: #B4232B;
+  --n4: #6240A6;
+  --n5: #983500;
+  --n6: #006673;
   --n7: #1F1B16;
-  --n8: #8C8273;
+  --n8: #655B4E;
+
+  --panel: #FFFFFF;
+  --control: #F4EFE8;
+  --control-border: #A99D8B;
+  --button-text: #FFFFFF;
+  --covered-edge: #A99D8B;
+  --revealed-edge: #D1C6B5;
 
   /* keycap depth — ONE pre-baked layered shadow, not runtime-stacked */
   --cap-shadow:
@@ -58,81 +64,81 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-
-  --bg: #16130F;
-  --bg-deep: #0F0D0A;
-  --well: #1F1B16;
-  --cell-top: #2C2722;
-  --cell-top-grad: #221E19;
-  --cell-edge: #3A332B;
-  --cell-revealed: #1A1611;
-  --cell-revealed-2: #201B15;
-  --text: #F2EDE4;
-  --muted: #9A9082;
-  --hairline: #2B2620;
-  --glass: rgba(40, 35, 29, 0.5);
-  --glass-border: rgba(255, 255, 255, 0.08);
-
-  --accent: #FF7A1A;
-  --accent-soft: #FFB066;
-  --mine-core: #E5694A;
-  --flag: #FB7185;
-  --flag-pole: #0A0A0A;
-  --win: #4ADE80;
-  --focus: #79A0FF;
-
-  --n1: #79C0FF;
-  --n2: #56D364;
-  --n3: #FF7B72;
-  --n4: #D2A8FF;
-  --n5: #FFA657;
-  --n6: #39C5CF;
-  --n7: #E6EDF3;
-  --n8: #9A9082;
-
-  --cap-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 -2px 0 rgba(0, 0, 0, 0.35) inset,
-    0 2px 4px rgba(0, 0, 0, 0.45);
-  --cap-shadow-hover:
-    0 1px 0 rgba(255, 255, 255, 0.1) inset,
-    0 -2px 0 rgba(0, 0, 0, 0.35) inset,
-    0 5px 9px rgba(0, 0, 0, 0.5);
-  --well-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.5) inset,
-    0 -1px 0 rgba(255, 255, 255, 0.04) inset;
-  --card-shadow: 0 16px 50px -12px rgba(0, 0, 0, 0.7);
+  --bg: #0B1220;
+  --bg-deep: #080E19;
+  --well: #0C1525;
+  --panel: #182436;
+  --control: #23344D;
+  --control-border: #61738F;
+  --cell-top: #667B99;
+  --cell-top-grad: #5D718F;
+  --cell-edge: #889AB3;
+  --covered-edge: #8B9CB5;
+  --revealed-edge: #2C3D57;
+  --cell-revealed: #111C2E;
+  --cell-revealed-2: #152237;
+  --text: #F3F6FC;
+  --muted: #BBC8DC;
+  --hairline: #3E506A;
+  --glass: #182436;
+  --glass-border: #3E506A;
+  --accent: #FFB45B;
+  --accent-soft: #FFD49A;
+  --button-text: #211407;
+  --mine-core: #FF8E85;
+  --flag: #FFF0B5;
+  --flag-pole: #111827;
+  --win: #78E5AA;
+  --focus: #A9CDFF;
+  --n1: #95CCFF;
+  --n2: #87E6A1;
+  --n3: #FFAAA5;
+  --n4: #DCC0FF;
+  --n5: #FFD095;
+  --n6: #7BE3EB;
+  --n7: #F3F6FC;
+  --n8: #C4D2E5;
+  --cap-shadow: 0 1px 0 rgba(255,255,255,.18) inset, 0 -2px 0 rgba(0,0,0,.28) inset;
+  --cap-shadow-hover: 0 0 0 2px #B7CAE3 inset, 0 2px 4px rgba(0,0,0,.3);
+  --well-shadow: 0 1px 4px rgba(0,0,0,.3) inset;
+  --card-shadow: 0 8px 24px rgba(0,0,0,.22);
 }
 
 /* Cool "Slate" palette */
 :root[data-theme="slate"] {
   color-scheme: dark;
-  --bg: #0E1116;
-  --bg-deep: #090B0F;
-  --well: #161B22;
-  --cell-top: #232B36;
-  --cell-top-grad: #1B222C;
-  --cell-edge: #2E3845;
-  --cell-revealed: #12161C;
-  --cell-revealed-2: #181D25;
-  --text: #E7EDF5;
-  --muted: #8B97A7;
-  --hairline: #232B36;
-  --glass: rgba(30, 38, 49, 0.5);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --accent: #FF7A1A;
-  --accent-soft: #FFB066;
-  --mine-core: #FF6B6B;
-  --flag: #FB7185;
-  --flag-pole: #0A0A0A;
-  --win: #34D399;
-  --focus: #60A5FA;
-  --n1: #60A5FA; --n2: #34D399; --n3: #FB7185; --n4: #C084FC;
-  --n5: #FBBF24; --n6: #22D3EE; --n7: #E7EDF5; --n8: #8B97A7;
-  --cap-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 -2px 0 rgba(0,0,0,.4) inset, 0 2px 4px rgba(0,0,0,.5);
-  --cap-shadow-hover: 0 1px 0 rgba(255,255,255,.1) inset, 0 -2px 0 rgba(0,0,0,.4) inset, 0 5px 9px rgba(0,0,0,.55);
-  --well-shadow: 0 2px 6px rgba(0,0,0,.55) inset, 0 -1px 0 rgba(255,255,255,.04) inset;
-  --card-shadow: 0 16px 50px -12px rgba(0,0,0,.75);
+  --bg: #091421;
+  --bg-deep: #070F19;
+  --well: #0A1626;
+  --panel: #14283B;
+  --control: #203C55;
+  --control-border: #69839D;
+  --cell-top: #6885A0;
+  --cell-top-grad: #5F7B96;
+  --cell-edge: #92AFC6;
+  --covered-edge: #93AEC4;
+  --revealed-edge: #2C465E;
+  --cell-revealed: #102033;
+  --cell-revealed-2: #14273A;
+  --text: #EFF7FF;
+  --muted: #BCD0E3;
+  --hairline: #3A5871;
+  --glass: #14283B;
+  --glass-border: #3A5871;
+  --accent: #FFBF69;
+  --accent-soft: #FFDBA8;
+  --button-text: #211407;
+  --mine-core: #FF9690;
+  --flag: #FFF0B5;
+  --flag-pole: #0A1626;
+  --win: #7CE5BD;
+  --focus: #A1DBFF;
+  --n1: #9BD7FF; --n2: #8FE7BA; --n3: #FFAAA5; --n4: #DCC0FF;
+  --n5: #FFD59B; --n6: #83E6EF; --n7: #EFF7FF; --n8: #C3D6E8;
+  --cap-shadow: 0 1px 0 rgba(255,255,255,.18) inset, 0 -2px 0 rgba(0,0,0,.28) inset;
+  --cap-shadow-hover: 0 0 0 2px #C0D6E8 inset, 0 2px 4px rgba(0,0,0,.3);
+  --well-shadow: 0 1px 4px rgba(0,0,0,.3) inset;
+  --card-shadow: 0 8px 24px rgba(0,0,0,.22);
 }
 
 /* Classic, high-readability palette */
@@ -151,7 +157,13 @@
   --hairline: #C2C2C2;
   --glass: rgba(255, 255, 255, 0.6);
   --glass-border: rgba(255, 255, 255, 0.8);
-  --accent: #E8590C;
+  --panel: #FFFFFF;
+  --control: #E8E8E8;
+  --control-border: #909090;
+  --button-text: #FFFFFF;
+  --covered-edge: #969696;
+  --revealed-edge: #B5B5B5;
+  --accent: #A33B00;
   --accent-soft: #FFA94D;
   --mine-core: #C92A2A;
   --flag: #D6336C;
@@ -169,10 +181,10 @@
 :root {
   /* geometry */
   --cell-size: 34px;
-  --cell-gap: 3px;
-  --cell-radius: 8px;
+  --cell-gap: 2px;
+  --cell-radius: 5px;
   --card-radius: 16px;
-  --well-pad: 14px;
+  --well-pad: 10px;
 
   /* motion */
   --dur-fast: 110ms;

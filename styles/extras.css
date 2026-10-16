@@ -47,7 +47,7 @@
   backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border);
   box-shadow: 0 4px 14px -8px rgba(0,0,0,.4);
-  opacity: 0.55;
+  opacity: 1;
   transition: opacity var(--dur-base) ease;
 }
 .board-wrap:hover .zoom-control,
@@ -201,4 +201,16 @@ html[lang="ja"] .app-foot { line-height: 1.8; }
   .lb-tabs { flex-wrap: wrap; }
   .lb-tabs .seg { flex-basis: 40%; }
   .brand-name span { font-size: 10px; }
+}
+
+.overlay-metrics { line-height: 1.7; }
+
+/* Keep zoom controls outside the minefield so they never cover playable cells. */
+.zoom-control {
+  position: static;
+  justify-self: end;
+  margin-top: 8px;
+  background: var(--panel);
+  border-color: var(--control-border);
+  box-shadow: none;
 }

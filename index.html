@@ -89,7 +89,7 @@
         <div id="overlay" class="overlay hidden" role="dialog" aria-labelledby="overlay-title" aria-describedby="overlay-sub">
           <div class="overlay-card glass">
             <div class="overlay-emoji" id="overlay-emoji" aria-hidden="true">🎉</div>
-            <h2 id="overlay-title"><span data-i18n="ui.winInitial">You win</span></h2>
+            <h2 id="overlay-title" data-panel-title tabindex="-1"><span data-i18n="ui.winInitial">You win</span></h2>
             <p id="overlay-sub" class="overlay-sub"><span data-i18n="ui.clearedInitial">Cleared in 000s</span></p>
             <div id="overlay-best" class="overlay-best hidden"><span data-i18n="ui.newBest">⚡ New best time!</span></div>
             <div id="overlay-metrics" class="overlay-metrics hidden"></div>
@@ -151,7 +151,7 @@
   <!-- Custom board dialog -->
   <dialog id="custom-dialog" class="modal">
     <form method="dialog" class="modal-body">
-      <h2 class="modal-title"><span data-i18n="ui.customBoard">Custom board</span></h2>
+      <h2 class="modal-title" data-panel-title tabindex="-1" autofocus><span data-i18n="ui.customBoard">Custom board</span></h2>
       <div class="field">
         <label for="inp-width"><span data-i18n="ui.width">Width</span> <output id="out-width">16</output></label>
         <input id="inp-width" type="range" min="5" max="60" step="1" value="16" />
@@ -178,7 +178,7 @@
   <!-- Stats dialog -->
   <dialog id="stats-dialog" class="modal">
     <div class="modal-body">
-      <h2 class="modal-title"><span data-i18n="ui.bestStats">Best times &amp; stats</span></h2>
+      <h2 class="modal-title" data-panel-title tabindex="-1" autofocus><span data-i18n="ui.bestStats">Best times &amp; stats</span></h2>
       <div id="stats-content" class="stats-grid"></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" id="stats-reset" type="button"><span data-i18n="ui.resetStats">Reset stats</span></button>
@@ -190,7 +190,7 @@
   <!-- Settings dialog -->
   <dialog id="settings-dialog" class="modal">
     <div class="modal-body">
-      <h2 class="modal-title"><span data-i18n="ui.settings">Settings</span></h2>
+      <h2 class="modal-title" data-panel-title tabindex="-1" autofocus><span data-i18n="ui.settings">Settings</span></h2>
       <div class="settings-list">
         <label class="switch-row"><span data-i18n="ui.language">Language</span>
           <select id="set-language" class="select">
@@ -234,7 +234,7 @@
   <!-- Leaderboard dialog -->
   <dialog id="leaderboard-dialog" class="modal">
     <div class="modal-body">
-      <h2 class="modal-title"><span data-i18n="ui.leaderboardHeading">🏆 Leaderboard</span></h2>
+      <h2 class="modal-title" data-panel-title tabindex="-1" autofocus><span data-i18n="ui.leaderboardHeading">🏆 Leaderboard</span></h2>
       <div class="segmented lb-tabs" role="group" aria-label="Leaderboard difficulty" data-i18n-aria-label="ui.leaderboardDifficulty">
         <button class="seg lb-seg" data-lbdiff="beginner" type="button"><span data-i18n="difficulty.beginner">Beginner</span></button>
         <button class="seg lb-seg" data-lbdiff="intermediate" type="button"><span data-i18n="difficulty.intermediate">Intermediate</span></button>

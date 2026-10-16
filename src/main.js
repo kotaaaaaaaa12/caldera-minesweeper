@@ -30,6 +30,16 @@ import { setEnabled as setSound, sfx } from "./sound.js";
 import * as achievements from "./achievements.js";
 import { buildShare, copyText } from "./share.js";
 
+// Distinguish deliberate keyboard navigation from pointer/native dialog focus.
+document.documentElement.dataset.input = 'pointer';
+const usePointer = () => { document.documentElement.dataset.input = 'pointer'; };
+window.addEventListener('pointerdown', usePointer, true);
+window.addEventListener('touchstart', usePointer, { capture: true, passive: true });
+window.addEventListener('mousedown', usePointer, true);
+window.addEventListener('keydown', event => {
+  if (event.key === 'Tab') document.documentElement.dataset.input = 'keyboard';
+}, true);
+
 const live = document.getElementById("live");
 const wellEl = document.querySelector(".well");
 const boardEl = document.getElementById("board");

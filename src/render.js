@@ -181,12 +181,14 @@ export class Renderer {
   fit() {
     const e = this.engine;
     if (!e) return;
-    const gap = 3, wellPad = 14;
+    const style = getComputedStyle(document.documentElement);
+    const gap = parseFloat(style.getPropertyValue('--cell-gap')) || 2;
+    const wellPad = parseFloat(style.getPropertyValue('--well-pad')) || 10;
     const budgetW = Math.min(window.innerWidth * 0.94, 940);
     const budgetH = Math.max(260, window.innerHeight * 0.62);
     const cw = (budgetW - gap * (e.width - 1) - wellPad * 2) / e.width;
     const ch = (budgetH - gap * (e.height - 1) - wellPad * 2) / e.height;
-    const base = Math.max(16, Math.min(40, Math.floor(Math.min(cw, ch))));
+    const base = Math.max(22, Math.min(40, Math.floor(Math.min(cw, ch))));
     const size = Math.max(12, Math.min(72, Math.round(base * this.userZoom)));
     document.documentElement.style.setProperty("--cell-size", size + "px");
   }

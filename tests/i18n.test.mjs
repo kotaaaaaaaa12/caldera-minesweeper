@@ -77,6 +77,15 @@ test('the complete application changes language without resetting gameplay or fo
       }
     }
 
+    $('#btn-settings').click();
+    assert.equal(document.activeElement, $('#settings-dialog [data-panel-title]'));
+    assert.equal($('#set-language').disabled, false);
+    assert.equal($('#settings-close').matches(':focus'), false);
+    $('#settings-close').click();
+    $('#btn-leaderboard').click();
+    assert.equal(document.activeElement, $('#leaderboard-dialog [data-panel-title]'));
+    assert.equal($('#lb-close').matches(':focus'), false);
+    $('#lb-close').click();
     $('.cell[data-index="40"]').click();
     const before = JSON.parse(localStorage.getItem('minesweeper.caldera.v1')).savedGame;
     assert.ok(before?.snap.firstClickDone);
@@ -99,6 +108,8 @@ test('the complete application changes language without resetting gameplay or fo
     ui.showResult({ won: true, timeMs: 12500, metrics: { threeBV: 20, threeBVps: 1.6, efficiency: 0.8 } });
     ui.setOverlayRank('leaderboard.rank', { rank: 2, difficulty: 'beginner' });
     ui.showOverlaySubmit('Pending name');
+    assert.equal(document.activeElement, $('#overlay-title'));
+    assert.equal($('#overlay-name').matches(':focus'), false);
     ui.setModeBadge({ daily: true, noGuess: true });
     ui.toastAchievements([ACHIEVEMENTS[0]]);
     await new Promise(resolve => setTimeout(resolve, 0));

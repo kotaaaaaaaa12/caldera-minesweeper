@@ -11,8 +11,7 @@ html, body { height: 100%; }
 body {
   font-family: var(--font-ui);
   color: var(--text);
-  background:
-    radial-gradient(1200px 800px at 50% -10%, var(--bg) 0%, var(--bg-deep) 100%);
+  background: var(--bg);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -59,7 +58,7 @@ kbd {
   top: -60px;
   transform: translateX(-50%);
   background: var(--accent);
-  color: #fff;
+  color: var(--button-text);
   padding: 8px 16px;
   border-radius: 0 0 10px 10px;
   z-index: 100;
@@ -71,8 +70,8 @@ kbd {
 
 .glass {
   background: var(--glass);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   border: 1px solid var(--glass-border);
   box-shadow: var(--card-shadow);
 }
@@ -87,3 +86,7 @@ kbd {
     scroll-behavior: auto !important;
   }
 }
+
+/* Pointer interactions do not show a keyboard focus ring. */
+html[data-input="pointer"] :focus:not(.cursor) { outline: none; }
+[data-panel-title]:focus { outline: none; }

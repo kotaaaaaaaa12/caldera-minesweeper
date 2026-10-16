@@ -50,6 +50,7 @@
   -webkit-tap-highlight-color: transparent;
   background: linear-gradient(180deg, var(--cell-top), var(--cell-top-grad));
   box-shadow: var(--cap-shadow);
+  border: 1px solid var(--covered-edge);
   cursor: pointer;
   transition:
     transform var(--dur-fast) var(--ease-spring),
@@ -74,6 +75,7 @@
 .cell[data-state="mine"],
 .cell[data-state="exploded"] {
   background: var(--cell-revealed);
+  border-color: var(--revealed-edge);
   box-shadow:
     0 1px 1px rgba(0,0,0,.05) inset,
     0 0 0 1px var(--hairline) inset;
@@ -212,7 +214,10 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  min-width: 240px;
+  width: min(100%, 440px);
+  min-width: 0;
+  background: var(--panel);
+  border-color: var(--control-border);
   animation: overlay-in var(--dur-slow) var(--ease-back) both;
 }
 .overlay-emoji { font-size: 46px; line-height: 1; }
@@ -224,4 +229,4 @@
   font-size: 14px;
   margin-top: 2px;
 }
-.overlay-actions { display: flex; gap: 10px; margin-top: 14px; }
+.overlay-actions { display: flex; justify-content: center; gap: 10px; margin-top: 14px; width: 100%; }

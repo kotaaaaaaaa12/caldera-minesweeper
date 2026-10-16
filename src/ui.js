@@ -95,6 +95,12 @@ export class UI {
     this.safeFirstClick = true; // mirrors the setting; bounds custom mine count
   }
 
+  openDialog(dialog) {
+    if (dialog.open) return;
+    dialog.showModal();
+    dialog.querySelector('[data-panel-title]')?.focus({ preventScroll: true });
+  }
+
   _mineCeiling(w, h) {
     return Math.max(1, w * h - (this.safeFirstClick ? 9 : 1));
   }
@@ -285,8 +291,8 @@ export class UI {
     e.ovLb.classList.add("hidden");
     this._prevFocus = document.activeElement;
     e.overlay.classList.remove("hidden");
-    // move focus into the result card so keyboard/SR users land on the action
-    requestAnimationFrame(() => e.ovAgain.focus());
+    // Keep the result announced without selecting a button or opening a keyboard.
+    e.ovTitle.focus({ preventScroll: true });
   }
 
   renderResultText() {
@@ -326,7 +332,7 @@ export class UI {
     const e = this.el;
     e.ovName.value = prefill;
     e.ovLb.classList.remove("hidden");
-    requestAnimationFrame(() => e.ovName.focus());
+
   }
   /** replace the submit form with a rank confirmation */
   setOverlayRank(key, values = {}) {
@@ -348,7 +354,7 @@ export class UI {
   openLeaderboard(diff) {
     this.setLbActive(diff);
     this.renderLeaderboardLoading();
-    this.el.lbDlg.showModal();
+    this.openDialog(this.el.lbDlg);
   }
   setLbActive(diff) {
     this.el.lbSegs.forEach((s) => s.setAttribute("aria-pressed", String(s.dataset.lbdiff === (diff.startsWith("daily-") ? "daily" : diff))));
@@ -380,8 +386,10 @@ export class UI {
     this.el.overlay.classList.add("hidden");
     const prev = this._prevFocus;
     this._prevFocus = null;
-    if (prev && prev.focus) prev.focus();
-    else this.el.face.focus();
+    if (document.documentElement.dataset.input === 'keyboard') {
+      if (prev?.isConnected && prev.focus) prev.focus({ preventScroll: true });
+      else this.el.face.focus({ preventScroll: true });
+    } else if (this.el.overlay.contains(document.activeElement)) document.activeElement.blur();
   }
 
   /* ---------- custom dialog ---------- */
@@ -389,7 +397,7 @@ export class UI {
     const e = this.el;
     if (initial) { e.inpW.value = initial.w; e.inpH.value = initial.h; e.inpM.value = initial.m; }
     this._syncCustom();
-    e.customDlg.showModal();
+    this.openDialog(e.customDlg);
   }
   _syncCustom() {
     const e = this.el;
@@ -424,7 +432,7 @@ export class UI {
     e.statsContent.innerHTML = rows.join("") +
       `<div class="stat-summary">${t("stats.streak", { current: statsData.streak || 0, best: statsData.bestStreak || 0 })}</div>` +
       this._achievementsHtml(this._unlocked || new Set());
-    if (!e.statsDlg.open) e.statsDlg.showModal();
+    if (!e.statsDlg.open) this.openDialog(e.statsDlg);
   }
   _achievementsHtml(unlocked) {
     if (!ACHIEVEMENTS.length) return "";
@@ -442,7 +450,7 @@ export class UI {
   refreshStats(statsData) { if (this.el.statsDlg.open) this.openStats(statsData, this._unlocked); }
 
   /* ---------- settings dialog ---------- */
-  openSettings() { this.el.setDlg.showModal(); }
+  openSettings() { this.openDialog(this.el.setDlg); }
   reflectSettings(s) {
     const e = this.el;
     this.safeFirstClick = s.safeFirstClick;
